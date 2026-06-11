@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% if target_nickname %}{{ target_nickname }}{% elif target_host %}{{ target_host }}{% endif %} - Dashboard - AgnMonitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title fw-bold m-0">{% if target_nickname %}{{ target_nickname }}{% elif target_host %}{{ target_host }}{% endif %} {% trans "MONITORING" %}</h2>
+    <div>
+        <button class="btn btn-sm btn-outline-warning me-2" onclick="addMemoPanel()">+ {% trans "Add Memo" %}</button>
+        <button class="btn btn-sm btn-outline-info me-2" onclick="window.openCommonModal('addPanelModal')">+ {% trans "Add Panel" %}</button>
+        <button class="btn btn-sm btn-primary" onclick="saveLayout()">{% trans "Save Layout" %}</button>
+    </div>
+</div>
+
+<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; width: 350px;"></div>
+
+<div class="grid-stack"></div>
+
+<!-- Add Panel Modal -->
+<div class="modal" id="addPanelModal" tabindex="-1" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">{% trans "Configure New Panel" %}</h5>
+        <button type="button" class="btn-close" onclick="window.closeCommonModal('addPanelModal')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label text-muted small">{% trans "Target Host" %}</label>
+                <select id="p-host" class="form-select" onchange="refreshFilters()"></select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small">{% trans "Category" %}</label>
+                <select id="p-category" class="form-select" onchange="onCategoryChange()">
+                    <option value="system">{% trans "System (OS)" %}</option>
+                    <option value="database">{% trans "Database" %}</option>
+                    <option value="custom_logs">{% trans "Custom Log (Tail)" %}</option>
+                </select>
+            </div>
+            <div class="col-md-6" id="p-source-section">
+                <label class="form-label text-muted small">{% trans "Data Source" %}</label>
+                <select id="p-source" class="form-select" onchange="onSourceChange()">
+                    <option value="cpu">CPU</option>
+                    <option value="mem">{% trans "Memory" %}</option>
+                    <option value="disk">{% trans "Disk" %}</option>
+                    <option value="net">{% trans "Network" %}</option>
+                    <option value="diskio">{% trans "Disk I/O" %}</option>
+                    <option value="win_cpu">{% trans "Windows CPU" %}</option>
+                </select>
+            </div>
+            <div class="col-md-6" id="db-type-section" style="display:none;">
+                <label class="form-label text-muted small">{% trans "DB Type" %}</label>
+                <select id="p-db-type" class="form-select" onchange="onDbSourceChange()">
+                    <option value="sql">{% trans "SQL Server" %}</option>
+                    <option value="mariadb" disabled>{% trans "MariaDB (Upcoming)" %}</option>
+                </select>
+            </div>
+            <div class="col-md-6" id="db-group-section" style="display:none;">
+                <label class="form-label text-muted small">{% trans "Metric Group" %}</label>
+                <select id="p-db-group" class="form-select" onchange="onDbSourceChange()">
+                    <option value="buffer">{% trans "Buffer Manager" %}</option>
+                    <option value="general_stats">{% trans "General Statistics" %}</option>
+                    <option value="statistics">{% trans "SQL Statistics" %}</option>
+                    <option value="locks">{% trans "Locks" %}</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small">{% trans "Metric Field" %}</label>
+                <select id="p-field" class="form-select"></select>
+            </div>
+            <div class="col-12" id="chart-type-section">
+                <label class="form-label text-muted small">{% trans "Chart Type" %}</label>
+                <select id="p-chart-type" class="form-select">
+                    <option value="text">{% trans "Single Value (Text)" %}</option>
+                    <option value="line">{% trans "Line Chart" %}</option>
+                </select>
+            </div>
+            <div id="filter-section" class="col-12 p-3 rounded border">
+                <label class="form-label text-info small fw-bold">{% trans "Metric Filters (Optional)" %}</label>
+                <div class="row g-2">
+                    <div class="col-5">
+                        <select id="p-f-key" class="form-select form-select-sm" onchange="onFilterKeyChange()">
+                            <option value="">{% trans "Filter Key" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-7">
+                        <select id="p-f-val" class="form-select form-select-sm">
+                            <option value="">{% trans "Filter Value" %}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="log-filter-section" class="col-12 p-3 rounded border" style="display:none;">
+                <label class="form-label text-warning small fw-bold">{% trans "Log Keyword Filter (Optional)" %}</label>
+                <input type="text" id="p-log-filter" class="form-control form-control-sm" placeholder="{% trans 'e.g., 404, error, GET /admin' %}">
+            </div>
+            <div class="col-12">
+                <label class="form-label text-muted small">{% trans "Panel Title" %}</label>
+                <input type="text" id="p-title" class="form-control" placeholder="{% trans 'e.g., Main Server Traffic' %}">
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary px-4" onclick="addNewPanel()">{% trans "Add to Dashboard" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Memo Edit Modal -->
+<div class="modal" id="memoEditModal" tabindex="-1" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">{% trans "Edit Memo" %}</h5>
+        <button type="button" class="btn-close" onclick="window.closeCommonModal('memoEditModal')"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-memo-id">
+        <textarea id="edit-memo-content" class="form-control" rows="10" style="background: var(--input-bg); color: var(--input-text);"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary px-4" onclick="saveMemoUpdate()">{% trans "Save Changes" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var grid = GridStack.init({ 
+        column: 12, cellHeight: 70, margin: 10, float: true, animate: true,
+        minW: 2, minH: 1
+    });
+    
+    grid.on('resizestop', function(event, el) {
+        var id = el.getAttribute('gs-id');
+        if (window.charts && window.charts[id]) {
+            window.charts[id].resize();
+        }
+    });
+
+    var targetHost = "{{ target_host|default:'' }}";
+    var allAvailableHosts = []; // 메모 패널 추가 시 참조를 위해 전역 변수 추가
+    var socket = initMonitoringSocket();
+
+    function requestInitialData() {
+        socket.send(JSON.stringify({'action': 'get_initial_data', 'host_filter': targetHost}));
+    }
+
+    if (socket.readyState === WebSocket.OPEN) { requestInitialData(); }
+    socket.onopen = () => { requestInitialData(); };
+
+    socket.onmessage = (e) => {
+        var data = JSON.parse(e.data);
+        if (data.type === 'setup') {
+            nicknameMap = data.nickname_map || {};
+            allAvailableHosts = data.hosts || []; // 호스트 목록 저장
+            populateHostList(data.hosts);
+            renderPanels(data.panels);
+            if (data.initial_metrics) updateMetrics(data.initial_metrics, false);
+            if (targetHost) document.getElementById('p-host').value = targetHost;
+            onCategoryChange();
+        } else if (data.type === 'metrics') {
+            updateMetrics(data.metrics, data.is_realtime);
+        } else if (data.type === 'panel_added') {
+            try {
+                addGridItem(data.panel, true);
+                // 추가된 패널에 대해 즉시 데이터 요청 (차트 초기화 등을 위해)
+                socket.send(JSON.stringify({'action': 'get_metrics'}));
+            } catch (err) {
+                console.error("Panel addition error:", err);
+            }
+            
+            // 모달 닫기 (차트 생성 여부와 상관없이 실행)
+            window.closeCommonModal('addPanelModal');
+        } else if (data.type === 'memo_updated') {
+            const el = document.getElementById(`panel-${data.id}`);
+            if (el) el.innerText = data.content;
+            window.closeCommonModal('memoEditModal');
+        } else if (data.type === 'panel_deleted') {
+            var el = document.querySelector(`.grid-stack-item[gs-id="${data.id}"]`);
+            if (el) grid.removeWidget(el);
+        } else if (data.type === 'available_filters') {
+            currentAvailableData = data.filters;
+            updateDataDropdowns();
+        } else if (data.type === 'more_logs') {
+            appendOlderLogs(data.panel_id, data.logs);
+        } else if (data.type === 'alert') {
+            showRealTimeAlert(data.alert);
+        }
+    };
+
+    function populateHostList(hosts) {
+        var select = document.getElementById('p-host');
+        if (!select) return;
+        select.innerHTML = '';
+        if (!hosts || hosts.length === 0) {
+            var opt = document.createElement('option');
+            opt.value = ""; opt.innerText = '{% trans "No hosts available" %}';
+            select.appendChild(opt);
+            return;
+        }
+        hosts.forEach(h => {
+            var opt = document.createElement('option');
+            opt.value = h.hostname; opt.innerText = h.nickname || h.hostname;
+            select.appendChild(opt);
+        });
+        if (targetHost) { select.value = targetHost; select.disabled = true; } else { select.disabled = false; }
+    }
+
+    function onCategoryChange() {
+        var category = document.getElementById('p-category').value;
+        var sS = document.getElementById('p-source-section'), 
+            dtS = document.getElementById('db-type-section'), 
+            dgS = document.getElementById('db-group-section'),
+            fS = document.getElementById('filter-section'), 
+            lS = document.getElementById('log-filter-section'), 
+            cS = document.getElementById('chart-type-section');
+            
+        // Reset visibility
+        sS.style.display = 'none'; dtS.style.display = 'none'; dgS.style.display = 'none';
+        
+        if (category === 'system') {
+            sS.style.display = 'block';
+            fS.style.display = 'block'; lS.style.display = 'none'; cS.style.display = 'block';
+            onSourceChange();
+        } else if (category === 'database') {
+            dtS.style.display = 'block'; dgS.style.display = 'block';
+            fS.style.display = 'block'; lS.style.display = 'none'; cS.style.display = 'block';
+            onDbSourceChange();
+        } else if (category === 'custom_logs') {
+            fS.style.display = 'block'; lS.style.display = 'block'; cS.style.display = 'none';
+            refreshFilters();
+        }
+    }
+
+    function onSourceChange() {
+        refreshFilters();
+    }
+
+    function onDbSourceChange() {
+        refreshFilters();
+    }
+
+    function refreshFilters() {
+        var h = document.getElementById('p-host').value;
+        var category = document.getElementById('p-category').value;
+        var s = "";
+        
+        if (category === 'system') s = document.getElementById('p-source').value;
+        else if (category === 'database') {
+            var dbType = document.getElementById('p-db-type').value;
+            var dbGroup = document.getElementById('p-db-group').value;
+            s = `${dbType}_${dbGroup}`;
+            if (s === 'sql_buffer') s = 'sql_buffer_manager';
+        } else {
+            s = category;
+        }
+        
+        if (h && s) socket.send(JSON.stringify({'action': 'get_available_filters', 'host': h, 'source': s}));
+    }
+
+    function updateDataDropdowns() {
+        var fS = document.getElementById('p-field'), kS = document.getElementById('p-f-key'), vS = document.getElementById('p-f-val');
+        var category = document.getElementById('p-category').value;
+        var source = "";
+        
+        if (category === 'system') source = document.getElementById('p-source').value;
+        else if (category === 'database') {
+            var dbType = document.getElementById('p-db-type').value;
+            var dbGroup = document.getElementById('p-db-group').value;
+            source = `${dbType}_${dbGroup}`;
+            if (source === 'sql_buffer') source = 'sql_buffer_manager';
+        } else {
+            source = category;
+        }
+
+        var fields = currentAvailableData.fields || [];
+        if (fields.length === 0) {
+            if (source === 'cpu') fields = ['usage_idle', 'usage_user', 'usage_system'];
+            else if (source === 'mem') fields = ['used_percent', 'used', 'free', 'total'];
+            else if (source === 'disk') fields = ['used_percent', 'used', 'free', 'total'];
+            else if (source === 'net') fields = ['bytes_recv', 'bytes_sent', 'packets_recv', 'packets_sent'];
+            else if (source === 'diskio') fields = ['read_bytes', 'write_bytes', 'io_time'];
+            else if (source === 'win_cpu') fields = ['Percent_Processor_Time'];
+            else if (source === 'sql_buffer_manager') fields = ['Buffer_cache_hit_ratio', 'Page_life_expectancy'];
+            else if (source === 'sql_general_stats') fields = ['User_Connections', 'Processes_blocked'];
+            else if (source === 'sql_statistics') fields = ['Batch_Requests/sec', 'SQL_Compilations/sec', 'SQL_Re-Compilations/sec'];
+            else if (source === 'sql_locks') fields = ['Number_of_Deadlocks/sec', 'Lock_Wait_Time_(ms)'];
+            else if (source === 'custom_logs') fields = ['value'];
+        }
+        fS.innerHTML = '';
+        fields.forEach(f => { var opt = document.createElement('option'); opt.value = f; opt.innerText = fieldMap[f] || f; fS.appendChild(opt); });
+        kS.innerHTML = '<option value="">{% trans "Filter Key" %}</option>';
+        vS.innerHTML = '<option value="">{% trans "Filter Value" %}</option>';
+        for (var key in currentAvailableData.tags) { var opt = document.createElement('option'); opt.value = key; opt.innerText = key; kS.appendChild(opt); }
+        if (source === 'cpu') { fS.value = 'usage_idle'; if (currentAvailableData.tags && currentAvailableData.tags['cpu']) { kS.value = 'cpu'; onFilterKeyChange(); vS.value = 'cpu-total'; } }
+        else if (source === 'win_cpu') { fS.value = 'Percent_Processor_Time'; if (currentAvailableData.tags && currentAvailableData.tags['instance']) { kS.value = 'instance'; onFilterKeyChange(); vS.value = '_Total'; } }
+        else if (source.startsWith('sql_')) {
+            if (currentAvailableData.tags && currentAvailableData.tags['instance']) {
+                kS.value = 'instance'; onFilterKeyChange();
+                if (source === 'sql_locks') vS.value = '_Total';
+                else if (vS.options.length > 1) vS.selectedIndex = 1;
+            }
+        }
+        else if (source === 'disk') { fS.value = 'used_percent'; if (currentAvailableData.tags && currentAvailableData.tags['path']) { kS.value = 'path'; onFilterKeyChange(); vS.value = '/'; } }
+        else if (source === 'net') { fS.value = 'bytes_recv'; if (currentAvailableData.tags && currentAvailableData.tags['interface']) { kS.value = 'interface'; onFilterKeyChange(); } }
+        else if (source === 'diskio') { fS.value = 'read_bytes'; if (currentAvailableData.tags && currentAvailableData.tags['name']) { kS.value = 'name'; onFilterKeyChange(); } }
+        else if (source === 'custom_logs') { fS.value = 'value'; }
+    }
+
+    function onFilterKeyChange() {
+        var key = document.getElementById('p-f-key').value, vS = document.getElementById('p-f-val');
+        vS.innerHTML = '<option value="">{% trans "Filter Value" %}</option>';
+        if (key && currentAvailableData.tags[key]) { currentAvailableData.tags[key].forEach(val => { var opt = document.createElement('option'); opt.value = val; opt.innerText = val; vS.appendChild(opt); }); }
+    }
+
+    function renderPanels(panels) { 
+        grid.batchUpdate(); 
+        
+        // 기존 차트 리소스 해제
+        if (window.charts) {
+            Object.values(window.charts).forEach(c => {
+                if (c && typeof c.destroy === 'function') c.destroy();
+            });
+            window.charts = {};
+        }
+
+        grid.removeAll(); 
+        panels.forEach(p => addGridItem(p, false)); 
+        grid.commit(); 
+    }
+
+    function addGridItem(p, isNew = false) {
+        var isLog = p.metric_source === 'custom_logs';
+        var isMemo = p.metric_source === 'memo';
+        var isChart = p.chart_type === 'line';
+        var fD = (p.filter_key && p.filter_value) ? `<div class="filter-text">${p.filter_key}=${p.filter_value}</div>` : '';
+        var lFD = (isLog && p.log_filter) ? `<div class="filter-text text-warning">{% trans "Keyword" %}: "${p.log_filter}"</div>` : '';
+        
+        var filterDisplay = isLog ? (fD + lFD) : fD;
+        
+        var tB = '';
+        if (p.metric_field === 'bytes_recv') tB = '<span class="type-badge badge-recv">{% trans "RECV" %}</span>';
+        else if (p.metric_field === 'bytes_sent') tB = '<span class="type-badge badge-sent">{% trans "SENT" %}</span>';
+        else if (p.metric_field === 'read_bytes') tB = '<span class="type-badge badge-read">{% trans "READ" %}</span>';
+        else if (p.metric_field === 'write_bytes') tB = '<span class="type-badge badge-write">{% trans "WRITE" %}</span>';
+
+        const editIcon = isMemo ? `<span class="btn-delete me-2" style="font-size: 0.8rem;" onclick="openMemoEditModal(${p.id})"><i class="bi bi-pencil-square"></i></span>` : '';
+        const hostDisplay = isMemo ? '' : `<span class="host-text">${nicknameMap[p.host] || p.host}</span>`;
+        var contentHtml = `<div class="card-header-info"><div><h6 class="card-title-text">${p.title}</h6>${filterDisplay}</div><div class="header-actions">${editIcon}${hostDisplay}<span class="btn-delete" onclick="deletePanel(${p.id})">&times;</span></div></div>`;
+        
+        if (isLog) { 
+            contentHtml += `<div class="log-viewer-container" id="panel-${p.id}" data-source="${p.metric_source}" data-field="${p.metric_field}" data-type="${p.chart_type}" onscroll="handleLogScroll(${p.id})"></div>`; 
+        } else if (isMemo) {
+            contentHtml += `<div class="log-viewer-container" id="panel-${p.id}" style="background: transparent; color: var(--text-main); font-family: inherit; font-size: 0.85rem; white-space: pre-wrap;">${p.memo_content || ''}</div>`;
+        } else if (isChart) {
+            contentHtml += `<div style="position: relative; flex-grow: 1; min-height: 100px; width: 100%;">
+                                <canvas id="chart-${p.id}"></canvas>
+                                <div id="panel-${p.id}" data-source="${p.metric_source}" data-field="${p.metric_field}" data-type="${p.chart_type}" style="display:none;"></div>
+                            </div>`;
+        } else { 
+            contentHtml += `<div class="metric-value-container"><h2 class="metric-value mb-0" id="panel-${p.id}" data-source="${p.metric_source}" data-field="${p.metric_field}" data-type="${p.chart_type}">--</h2>${tB}</div>`; 
+        }
+
+        let placement = { x: p.x, y: p.y };
+        if (isNew) {
+            // Find the bottom-most Y coordinate and add it there
+            let maxY = 0;
+            grid.engine.nodes.forEach(n => { if (n.y + n.h > maxY) maxY = n.y + n.h; });
+            placement = { x: 0, y: maxY, autoPosition: false };
+        }
+
+        var el = grid.addWidget({ 
+            ...placement,
+            w: p.w || (isLog ? 4 : (isChart ? 3 : (isMemo ? 3 : 2))), 
+            h: p.h || (isLog ? 3 : (isChart ? 3 : (isMemo ? 2 : 2))), 
+            id: p.id, 
+            content: contentHtml, 
+            minW: isLog ? 4 : 2,
+            minH: 1
+        });
+        
+        if (isChart) {
+            setTimeout(() => { initChart(p.id, p.chart_type, p.title); }, 0);
+        }
+    }
+
+    function addMemoPanel() {
+        showPrompt('{% trans "New Memo" %}', '{% trans "Enter title for the memo panel" %}', '{% trans "Memo" %}', (title) => {
+            if (!title) return;
+            var p = { 
+                host: targetHost || (allAvailableHosts.length > 0 ? allAvailableHosts[0].hostname : 'unknown'), 
+                parent_host: targetHost, 
+                title: title, 
+                source: 'memo', 
+                field: '', 
+                chart_type: 'text',
+                memo_content: '{% trans "Write your memo here..." %}'
+            };
+            socket.send(JSON.stringify({'action': 'add_panel', 'panel': p}));
+        });
+    }
+
+    function openMemoEditModal(id) {
+        const el = document.getElementById(`panel-${id}`);
+        if (!el) return;
+        document.getElementById('edit-memo-id').value = id;
+        document.getElementById('edit-memo-content').value = el.innerText;
+        window.openCommonModal('memoEditModal');
+    }
+
+    function saveMemoUpdate() {
+        const id = document.getElementById('edit-memo-id').value;
+        const content = document.getElementById('edit-memo-content').value;
+        socket.send(JSON.stringify({'action': 'update_memo', 'id': id, 'content': content}));
+    }
+
+    function deletePanel(id) { 
+        showConfirm('{% trans "Delete Panel" %}', '{% trans "Are you sure you want to delete this panel?" %}', () => {
+            if (window.charts && window.charts[id]) {
+                window.charts[id].destroy();
+                delete window.charts[id];
+            }
+            socket.send(JSON.stringify({'action': 'delete_panel', 'id': id})); 
+        });
+    }
+    function saveLayout() {
+        var layout = [];
+        document.querySelectorAll('.grid-stack-item').forEach(el => {
+            const node = el.gridstackNode;
+            if (node) {
+                layout.push({
+                    id: el.getAttribute('gs-id'),
+                    x: node.x,
+                    y: node.y,
+                    w: node.w,
+                    h: node.h
+                });
+            }
+        });
+        socket.send(JSON.stringify({'action': 'save_layout', 'layout': layout}));
+        showAlert('{% trans "Layout Saved" %}', '{% trans "Dashboard layout has been saved successfully." %}');
+    }    function addNewPanel() {
+        var category = document.getElementById('p-category').value;
+        var source = "";
+        if (category === 'system') source = document.getElementById('p-source').value;
+        else if (category === 'database') {
+            var dbType = document.getElementById('p-db-type').value;
+            var dbGroup = document.getElementById('p-db-group').value;
+            source = `${dbType}_${dbGroup}`;
+            if (source === 'sql_buffer') source = 'sql_buffer_manager';
+        } else {
+            source = category;
+        }
+
+        var p = { 
+            host: document.getElementById('p-host').value, 
+            parent_host: targetHost, 
+            title: document.getElementById('p-title').value || `${source}`, 
+            source: source, 
+            field: document.getElementById('p-field').value, 
+            chart_type: document.getElementById('p-chart-type').value,
+            f_key: document.getElementById('p-f-key').value, 
+            f_val: document.getElementById('p-f-val').value, 
+            log_filter: document.getElementById('p-log-filter').value 
+        };
+        socket.send(JSON.stringify({'action': 'add_panel', 'panel': p}));
+        document.getElementById('p-title').value = ''; document.getElementById('p-log-filter').value = '';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% load i18n %}
+{% comment %}
+  단일 서버 상태 행. 컨텍스트 변수 s 를 사용한다.
+  usage_bar 표시는 인라인 매크로 대신 단순 조건부 색상으로 처리.
+{% endcomment %}
+<tr>
+    <td>
+        <div class="fw-bold">{{ s.nickname }}</div>
+        <div class="small text-muted">{{ s.hostname }}</div>
+    </td>
+    <td class="text-center">
+        {% if s.online %}
+            <span class="badge bg-success">{% trans "Online" %}</span>
+        {% else %}
+            <span class="badge bg-secondary">{% trans "Offline" %}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if s.cpu_percent != None %}
+            <div class="d-flex justify-content-between small"><span>{{ s.cpu_percent }}%</span></div>
+            <div class="progress" style="height:6px;">
+                <div class="progress-bar {% if s.cpu_percent >= 90 %}bg-danger{% elif s.cpu_percent >= 70 %}bg-warning{% else %}bg-success{% endif %}"
+                     style="width: {{ s.cpu_percent }}%;"></div>
+            </div>
+        {% else %}<span class="text-muted small">-</span>{% endif %}
+    </td>
+    <td>
+        {% if s.mem_percent != None %}
+            <div class="small">{{ s.mem_percent }}%</div>
+            <div class="progress" style="height:6px;">
+                <div class="progress-bar {% if s.mem_percent >= 90 %}bg-danger{% elif s.mem_percent >= 70 %}bg-warning{% else %}bg-info{% endif %}"
+                     style="width: {{ s.mem_percent }}%;"></div>
+            </div>
+            {% if s.mem_used %}<div class="small text-muted mt-1">{{ s.mem_used }}{% if s.mem_total %} / {{ s.mem_total }}{% endif %}</div>{% endif %}
+        {% elif s.mem_available %}
+            <span class="small">{% trans "Avail" %}: {{ s.mem_available }}</span>
+        {% else %}<span class="text-muted small">-</span>{% endif %}
+    </td>
+    <td>
+        {% for p in s.partitions %}
+            <div class="mb-2">
+                <div class="d-flex justify-content-between small">
+                    <span class="fw-semibold">{{ p.mount }}</span>
+                    {% if p.used_percent != None %}<span class="text-muted">{{ p.used_percent }}%</span>{% endif %}
+                </div>
+                {% if p.used_percent != None %}
+                <div class="progress" style="height:5px;">
+                    <div class="progress-bar {% if p.used_percent >= 90 %}bg-danger{% elif p.used_percent >= 75 %}bg-warning{% else %}bg-secondary{% endif %}"
+                         style="width: {{ p.used_percent }}%;"></div>
+                </div>
+                {% endif %}
+                {% if p.used %}<div class="small text-muted">{{ p.used }}{% if p.total %} / {{ p.total }}{% endif %}</div>{% elif p.free %}<div class="small text-muted">{% trans "Free" %}: {{ p.free }}</div>{% endif %}
+            </div>
+        {% empty %}
+            <span class="text-muted small">-</span>
+        {% endfor %}
+    </td>
+    <td class="small text-muted">{{ s.last_seen|default:"-" }}</td>
+</tr>

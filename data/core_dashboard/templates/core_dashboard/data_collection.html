@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Data Collection" %} - AgnMonitor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-transparent border-bottom">
+                <h5 class="m-0 fw-bold text-info">{% trans "Targets" %}</h5>
+            </div>
+            <div class="list-group list-group-flush rounded-bottom overflow-auto" style="max-height: 70vh;">
+                <button type="button" class="list-group-item list-group-item-action active-pretty" onclick="loadConfig(null, this, 'linux')">
+                    <i class="bi bi-ubuntu me-2"></i> {% trans "Common (Linux)" %}
+                </button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="loadConfig(null, this, 'windows')">
+                    <i class="bi bi-windows me-2"></i> {% trans "Common (Windows)" %}
+                </button>
+                <div class="list-group-item list-group-header-adaptive small fw-bold text-uppercase py-2">{% trans "Individual Servers" %}</div>
+                {% for server in all_servers %}
+                <button type="button" class="list-group-item list-group-item-action" onclick="loadConfig({{ server.id }}, this)">
+                    <i class="bi bi-server me-2"></i> {{ server.nickname|default:server.hostname }}
+                    <div class="small text-muted ms-4">{{ server.hostname }}</div>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="m-0 fw-bold text-info" id="config-title">{% trans "Common (Linux)" %}</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resetEditor()">{% trans "Reset" %}</button>
+                    <button class="btn btn-sm btn-primary px-4" onclick="saveConfig()">{% trans "Save Changes" %}</button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Instruction Alert -->
+                <div class="alert alert-info alert-dismissible fade show m-3 small" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    {% trans "Configure which metrics/logs to store in the database. Use field selection for more granular control." %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Interactive Rule Builder -->
+                <div class="rule-builder p-3 border-bottom bg-dark bg-opacity-10">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-tools me-2"></i>{% trans "Rule Builder" %}</h6>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "1. Data Source" %}</label>
+                            <select id="builder-type" class="form-select form-select-sm" onchange="onSourceChange()">
+                                <option value="">-- {% trans "Select Source" %} --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "2. Metric Field" %} ({% trans "Optional" %})</label>
+                            <select id="builder-field" class="form-select form-select-sm">
+                                <option value="">{% trans "All Fields" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "3. Filter Key" %} ({% trans "Optional" %})</label>
+                            <select id="builder-filter-key" class="form-select form-select-sm" onchange="onFilterKeyChange()">
+                                <option value="">{% trans "Filter Key" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "4. Filter Value" %} ({% trans "Optional" %})</label>
+                            <select id="builder-filter-value" class="form-select form-select-sm">
+                                <option value="">{% trans "Filter Value" %}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-sm btn-info px-4" onclick="addRuleFromBuilder()">
+                            <i class="bi bi-plus-lg"></i> {% trans "Add Rule" %}
+                        </button>
+                    </div>
+
+                    <div id="active-rules-list" class="d-flex flex-wrap gap-2">
+                        <!-- Rule badges will appear here -->
+                    </div>
+                </div>
+
+                <!-- Manual JSON Editor -->
+                <div class="p-3 bg-dark bg-opacity-25">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-code-slash me-2"></i>{% trans "Manual JSON Editor" %}</h6>
+                    <textarea id="json-editor" class="form-control font-monospace p-3 border-0 bg-dark text-info" style="height: 30vh; font-size: 0.85rem; resize: vertical;" spellcheck="false" oninput="syncFromEditor()"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (typeof socket === 'undefined') {
+        var socket = initMonitoringSocket();
+        var currentServerId = null;
+        var currentHostname = null;
+        var currentConfigType = 'linux'; // Default
+        var configData = { sources: [] }; 
+        var discoveryData = { tags: {}, host_sources: [], fields: [] };
+    }
+
+    // Elements should be re-fetched on every swap as the DOM nodes change
+    var editor = document.getElementById('json-editor');
+    var title = document.getElementById('config-title');
+    var rulesList = document.getElementById('active-rules-list');
+    var sourceSelect = document.getElementById('builder-type');
+    var fieldSelect = document.getElementById('builder-field');
+    var keySelect = document.getElementById('builder-filter-key');
+    var valSelect = document.getElementById('builder-filter-value');
+
+
+    socket.onopen = () => {
+        socket.send(JSON.stringify({'action': 'get_initial_data'}));
+    };
+
+    socket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.type === 'setup') {
+            refreshDiscovery();
+        } else if (data.type === 'available_filters') {
+            discoveryData = data.filters;
+            updateDiscoveryUI();
+        }
+    };
+
+    // HTMX와 일반 로드를 모두 지원하는 초기화 함수
+    function initDataCollection() {
+        loadConfig(null, null, 'linux');
+    }
+
+    if (document.readyState === 'complete') {
+        initDataCollection();
+    } else {
+        window.addEventListener('load', initDataCollection);
+    }
+    
+    // HTMX navigation support
+    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+        if (evt.detail.target.classList.contains('main-content')) {
+            initDataCollection();
+        }
+    });
+
+    function loadConfig(serverId, element, type) {
+        currentServerId = serverId;
+        currentConfigType = type || 'custom';
+        
+        if (element) {
+            document.querySelectorAll('.list-group-item').forEach(el => el.classList.remove('active-pretty'));
+            element.classList.add('active-pretty');
+            title.innerText = element.innerText.trim().split('\n')[0];
+            
+            const hostDiv = element.querySelector('.small');
+            currentHostname = hostDiv ? hostDiv.innerText.trim() : null;
+        } else if (!element && !type) {
+            // Initial call or fallback
+        }
+
+        const url = serverId ? `/api/data-collection/get/${serverId}/` : `/api/data-collection/get/?type=${currentConfigType}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    configData = data.config || { sources: [] };
+                    if (!configData.sources) configData.sources = [];
+                    updateUI();
+                    refreshDiscovery();
+                } else {
+                    showAlert('Error', data.message);
+                }
+            })
+            .catch(err => showAlert('Error', 'Failed to fetch config'));
+    }
+
+    function refreshDiscovery() {
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                'action': 'get_available_filters', 
+                'host': currentHostname, 
+                'source': sourceSelect.value || ''
+            }));
+        }
+    }
+
+    function updateDiscoveryUI() {
+        const selectedSource = sourceSelect.value;
+        const selectedField = fieldSelect.value;
+        const selectedKey = keySelect.value;
+        
+        // 1. Update Sources (always rebuild for common configs to reflect OS filtering)
+        sourceSelect.innerHTML = '<option value="all">{% trans "All Data" %}</option>';
+        if (discoveryData.host_sources) {
+            discoveryData.host_sources.sort().forEach(s => {
+                if (currentConfigType === 'linux' && s.startsWith('win_')) return;
+                if (currentConfigType === 'windows') {
+                    const linuxOnly = ['nginx_logs'];
+                    if (linuxOnly.includes(s)) return;
+                }
+                const opt = document.createElement('option');
+                opt.value = s; opt.innerText = s;
+                if (s === selectedSource) opt.selected = true;
+                sourceSelect.appendChild(opt);
+            });
+        }
+
+        // 2. Update Fields
+        fieldSelect.innerHTML = '<option value="">{% trans "All Fields" %}</option>';
+        if (discoveryData.fields) {
+            discoveryData.fields.sort().forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f; opt.innerText = f;
+                if (f === selectedField) opt.selected = true;
+                fieldSelect.appendChild(opt);
+            });
+        }
+
+        // 3. Update Filters
+        keySelect.innerHTML = '<option value="">{% trans "Filter Key" %}</option>';
+        if (discoveryData.tags) {
+            Object.keys(discoveryData.tags).sort().forEach(key => {
+                if (key === 'host') return;
+                const opt = document.createElement('option');
+                opt.value = key; opt.innerText = key;
+                if (key === selectedKey) opt.selected = true;
+                keySelect.appendChild(opt);
+            });
+        }
+
+        // [Smart Auto-fill] 
+        if (sourceSelect.value && !fieldSelect.value && !keySelect.value) {
+            const s = sourceSelect.value;
+            if (s === 'cpu') {
+                if (discoveryData.fields?.includes('usage_idle')) fieldSelect.value = 'usage_idle';
+                if (discoveryData.tags?.['cpu']) { keySelect.value = 'cpu'; onFilterKeyChange(); valSelect.value = 'cpu-total'; }
+            } else if (s === 'win_cpu') {
+                if (discoveryData.fields?.includes('Percent_Processor_Time')) fieldSelect.value = 'Percent_Processor_Time';
+                if (discoveryData.tags?.['instance']) { keySelect.value = 'instance'; onFilterKeyChange(); valSelect.value = '_Total'; }
+            } else if (s === 'disk') {
+                if (discoveryData.fields?.includes('used_percent')) fieldSelect.value = 'used_percent';
+                if (discoveryData.tags?.['path']) { keySelect.value = 'path'; onFilterKeyChange(); valSelect.value = '/'; }
+            }
+        }
+
+        onFilterKeyChange();
+    }
+
+    function onSourceChange() {
+        // Reset field when source changes
+        fieldSelect.innerHTML = '<option value="">{% trans "All Fields" %}</option>';
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                'action': 'get_available_filters', 
+                'host': currentHostname,
+                'source': sourceSelect.value
+            }));
+        }
+    }
+
+    function onFilterKeyChange() {
+        const key = keySelect.value;
+        valSelect.innerHTML = '<option value="">{% trans "Filter Value" %}</option>';
+        if (key && discoveryData.tags[key]) {
+            discoveryData.tags[key].sort().forEach(val => {
+                const opt = document.createElement('option');
+                opt.value = val; opt.innerText = val;
+                valSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function updateUI() {
+        editor.value = JSON.stringify(configData, null, 4);
+        renderRuleBadges();
+    }
+
+    function addRuleFromBuilder() {
+        const type = sourceSelect.value;
+        const field = fieldSelect.value;
+        const filter_key = keySelect.value;
+        const filter_value = valSelect.value;
+
+        if (!type) {
+            showAlert('Error', '{% trans "Please select a data source." %}');
+            return;
+        }
+
+        configData.sources.push({ type, field, filter_key, filter_value });
+        updateUI();
+    }
+
+    function removeRule(index) {
+        configData.sources.splice(index, 1);
+        updateUI();
+    }
+
+    function syncFromEditor() {
+        try {
+            const parsed = JSON.parse(editor.value);
+            configData = parsed;
+            if (!configData.sources) configData.sources = [];
+            renderRuleBadges();
+        } catch (e) {}
+    }
+
+    function renderRuleBadges() {
+        rulesList.innerHTML = '';
+        if (!configData.sources || configData.sources.length === 0) {
+            rulesList.innerHTML = '<span class="text-muted small">{% trans "No active rules" %}</span>';
+            return;
+        }
+        configData.sources.forEach((rule, index) => {
+            const badge = document.createElement('div');
+            badge.className = 'badge bg-dark border border-info border-opacity-25 p-2 d-flex align-items-center gap-2';
+            badge.style.fontWeight = 'normal';
+            
+            let details = '';
+            if (rule.field) details += `<span class="text-white-50">.</span><span class="text-warning">${rule.field}</span>`;
+            if (rule.filter_key && rule.filter_value) {
+                details += `<span class="text-info ms-1 small">[${rule.filter_key}=${rule.filter_value}]</span>`;
+            }
+
+            badge.innerHTML = `
+                <span class="text-info fw-bold">${(rule.type || 'UNKNOWN').toUpperCase()}</span>
+                ${details}
+                <span class="text-white-50">|</span>
+                <span class="small">{% trans "DB" %}</span>
+                <span class="btn-remove-rule ms-1" onclick="removeRule(${index})" title="{% trans 'Remove Rule' %}">
+                    <i class="bi bi-x"></i>
+                </span>
+            `;
+            rulesList.appendChild(badge);
+        });
+    }
+
+    function saveConfig() {
+        fetch('/api/data-collection/update/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                server_id: currentServerId,
+                config_type: currentConfigType,
+                config: configData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('{% trans "Configuration saved successfully." %}');
+            } else {
+                showAlert('Error', data.message);
+            }
+        })
+        .catch(err => showAlert('Error', 'Failed to save config'));
+    }
+
+    function resetEditor() {
+        loadConfig(currentServerId, null, currentConfigType);
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showAlert(title, body) {
+        const modal = new bootstrap.Modal(document.getElementById('systemModal'));
+        document.getElementById('systemModalTitle').innerText = title;
+        document.getElementById('systemModalBody').innerHTML = body;
+        document.getElementById('systemModalConfirmBtn').onclick = () => modal.hide();
+        document.getElementById('systemModalCancelBtn').style.display = 'none';
+        modal.show();
+    }
+
+    function showToast(message) {
+        const modal = new bootstrap.Modal(document.getElementById('systemModal'));
+        document.getElementById('systemModalTitle').innerText = 'Success';
+        document.getElementById('systemModalBody').innerText = message;
+        document.getElementById('systemModalConfirmBtn').onclick = () => modal.hide();
+        document.getElementById('systemModalCancelBtn').style.display = 'none';
+        modal.show();
+    }
+</script>
+{% endblock %}

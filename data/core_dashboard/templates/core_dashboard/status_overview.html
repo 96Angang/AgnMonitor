@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Server Status" %} - AgnMonitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h2 class="text-success fw-bold m-0">{% trans "Server Status" %}</h2>
+    <div class="d-flex gap-2 align-items-center">
+        <span class="text-muted small">
+            <i class="bi bi-clock-history me-1"></i>{% trans "Collected at" %}: {{ collected_at }}
+        </span>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'status_overview' %}" title="{% trans 'Refresh' %}">
+            <i class="bi bi-arrow-clockwise"></i>
+        </a>
+    </div>
+</div>
+<p class="text-muted small mb-4">
+    <i class="bi bi-info-circle me-1"></i>{% trans "This is a snapshot taken on page load (not real-time). Refresh to update." %}
+</p>
+
+{% comment %} ---------- Linux ---------- {% endcomment %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="m-0 fw-bold text-info"><i class="bi bi-ubuntu me-2"></i>{% trans "Linux Servers" %} <span class="badge bg-secondary ms-1">{{ linux_servers|length }}</span></h5>
+        <a class="btn btn-sm btn-success" href="{% url 'status_overview_download' %}?os=linux" hx-boost="false" hx-disable target="_blank" rel="noopener">
+            <i class="bi bi-download me-1"></i>{% trans "Download CSV" %}
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle m-0">
+            <thead>
+                <tr class="small text-muted">
+                    <th>{% trans "Server" %}</th>
+                    <th class="text-center" style="width:90px;">{% trans "Status" %}</th>
+                    <th style="width:160px;">CPU</th>
+                    <th style="width:160px;">RAM</th>
+                    <th>{% trans "Disk Partitions" %}</th>
+                    <th style="width:150px;">{% trans "Last Seen" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in linux_servers %}
+                {% include 'core_dashboard/_status_row.html' with s=s %}
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">{% trans "No Linux servers found" %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% comment %} ---------- Windows ---------- {% endcomment %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="m-0 fw-bold text-primary"><i class="bi bi-windows me-2"></i>{% trans "Windows Servers" %} <span class="badge bg-secondary ms-1">{{ windows_servers|length }}</span></h5>
+        <a class="btn btn-sm btn-success" href="{% url 'status_overview_download' %}?os=windows" hx-boost="false" hx-disable target="_blank" rel="noopener">
+            <i class="bi bi-download me-1"></i>{% trans "Download CSV" %}
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle m-0">
+            <thead>
+                <tr class="small text-muted">
+                    <th>{% trans "Server" %}</th>
+                    <th class="text-center" style="width:90px;">{% trans "Status" %}</th>
+                    <th style="width:160px;">CPU</th>
+                    <th style="width:160px;">RAM</th>
+                    <th>{% trans "Disk Partitions" %}</th>
+                    <th style="width:150px;">{% trans "Last Seen" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in windows_servers %}
+                {% include 'core_dashboard/_status_row.html' with s=s %}
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">{% trans "No Windows servers found" %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

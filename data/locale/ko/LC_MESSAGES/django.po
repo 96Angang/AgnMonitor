@@ -1,0 +1,1173 @@
+# AgnMonitor Korean Translation
+# Copyright (C) 2026
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: AgnMonitor 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 11:46+0900\n"
+"PO-Revision-Date: 2026-05-15 17:00+0900\n"
+"Last-Translator: Gemini CLI\n"
+"Language-Team: Korean\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "English"
+msgstr "영어"
+
+msgid "Korean"
+msgstr "한국어"
+
+msgid "⚠️ 전체 데이터 삭제 (주의)"
+msgstr ""
+
+msgid "선택된 항목의 해당 서버 데이터 전체 삭제"
+msgstr ""
+
+msgid "30일 이상 된 메트릭 삭제"
+msgstr "30일 이상 된 메트릭 삭제"
+
+msgid "선택된 알람 규칙 활성화"
+msgstr "선택된 알람 규칙 활성화"
+
+msgid "선택된 알람 규칙 비활성화"
+msgstr "선택된 알람 규칙 비활성화"
+
+msgid "선택된 알람 해결 완료 처리"
+msgstr "선택된 알람 해결 완료 처리"
+
+msgid "호스트명"
+msgstr "호스트명"
+
+msgid "소스"
+msgstr "소스"
+
+msgid "타임스탬프"
+msgstr "타임스탬프"
+
+msgid "데이터"
+msgstr "데이터"
+
+msgid "레벨"
+msgstr "레벨"
+
+msgid "모니터링 메트릭"
+msgstr "모니터링 메트릭"
+
+msgid "모니터링 메트릭 목록"
+msgstr "모니터링 메트릭 목록"
+
+msgid "사용자"
+msgstr "사용자"
+
+msgid "패널 제목"
+msgstr "패널 제목"
+
+msgid "호스트"
+msgstr "호스트"
+
+msgid "상위 호스트"
+msgstr "상위 호스트"
+
+msgid "메트릭 소스"
+msgstr "메트릭 소스"
+
+msgid "메트릭 필드"
+msgstr "메트릭 필드"
+
+msgid "차트 타입"
+msgstr "차트 타입"
+
+msgid "필터 키"
+msgstr "필터 키"
+
+msgid "필터 값"
+msgstr "필터 값"
+
+msgid "로그 필터"
+msgstr "로그 필터"
+
+msgid "메모 내용"
+msgstr ""
+
+msgid "대시보드 패널"
+msgstr "대시보드 패널"
+
+msgid "대시보드 패널 목록"
+msgstr "대시보드 패널 목록"
+
+msgid "닉네임"
+msgstr "닉네임"
+
+msgid "최근 감지 IP"
+msgstr "최근 감지 IP"
+
+msgid "접속 IP"
+msgstr "접속 IP"
+
+msgid "데이터 보존 기간(일)"
+msgstr "데이터 보존 기간(일)"
+
+msgid "API 상태"
+msgstr "API 상태"
+
+msgid "Ping 상태"
+msgstr "Ping 상태"
+
+#, fuzzy
+#| msgid "최근 핑 시각"
+msgid "최근 핑 시도 시각"
+msgstr "최근 핑 시각"
+
+#, fuzzy
+#| msgid "최근 핑 시각"
+msgid "최근 핑 성공 시각"
+msgstr "최근 핑 시각"
+
+msgid "최근 API 성공 시각"
+msgstr ""
+
+msgid "등록일"
+msgstr "등록일"
+
+msgid "관리 서버"
+msgstr "관리 서버"
+
+msgid "관리 서버 목록"
+msgstr "관리 서버 목록"
+
+msgid "그룹 이름"
+msgstr "그룹 이름"
+
+msgid "소속 서버"
+msgstr "소속 서버"
+
+msgid "생성일"
+msgstr "생성일"
+
+msgid "호스트 그룹"
+msgstr "호스트 그룹"
+
+msgid "호스트 그룹 목록"
+msgstr "호스트 그룹 목록"
+
+msgid "보다 큼 (> )"
+msgstr "보다 큼 (> )"
+
+msgid "보다 작음 (< )"
+msgstr "보다 작음 (< )"
+
+msgid "같음 (=)"
+msgstr "같음 (=)"
+
+msgid "호스트 오프라인"
+msgstr "호스트 오프라인"
+
+msgid "정보"
+msgstr "정보"
+
+msgid "경고"
+msgstr "경고"
+
+msgid "위험"
+msgstr "위험"
+
+msgid "개별 호스트"
+msgstr "개별 호스트"
+
+msgid "전체 호스트"
+msgstr "전체 호스트"
+
+msgid "알람 이름"
+msgstr "알람 이름"
+
+msgid "대상 타입"
+msgstr "대상 타입"
+
+msgid "대상 그룹"
+msgstr "대상 그룹"
+
+msgid "로그 키워드"
+msgstr "로그 키워드"
+
+msgid "조건"
+msgstr "조건"
+
+msgid "임계치"
+msgstr "임계치"
+
+msgid "심각도"
+msgstr "심각도"
+
+msgid "웹훅 URL"
+msgstr "웹훅 URL"
+
+msgid "알림 이메일"
+msgstr "알림 이메일"
+
+msgid "쉼표(,)로 구분하여 여러 이메일 지정 가능"
+msgstr ""
+
+msgid "쿨다운(분)"
+msgstr "쿨다운(분)"
+
+msgid "최근 발생 시각"
+msgstr "최근 발생 시각"
+
+msgid "활성화 여부"
+msgstr "활성화 여부"
+
+msgid "알람 규칙"
+msgstr "알람 규칙"
+
+msgid "알람 규칙 목록"
+msgstr "알람 규칙 목록"
+
+msgid "규칙"
+msgstr "규칙"
+
+msgid "발생 당시 값"
+msgstr "발생 당시 값"
+
+msgid "발생 시각"
+msgstr "발생 시각"
+
+msgid "해결 여부"
+msgstr "해결 여부"
+
+msgid "해결 시각"
+msgstr "해결 시각"
+
+msgid "알람 이력"
+msgstr "알람 이력"
+
+msgid "알람 이력 목록"
+msgstr "알람 이력 목록"
+
+msgid "최근 감지 시각"
+msgstr "최근 감지 시각"
+
+msgid "메타데이터"
+msgstr "메타데이터"
+
+msgid "메트릭 메타데이터"
+msgstr "메트릭 메타데이터"
+
+msgid "메트릭 메타데이터 목록"
+msgstr "메트릭 메타데이터 목록"
+
+msgid "리눅스 공통"
+msgstr "리눅스 공통"
+
+msgid "윈도우 공통"
+msgstr "윈도우 공통"
+
+msgid "서버 전용"
+msgstr "서버 전용"
+
+msgid "서버"
+msgstr "서버"
+
+msgid "설정 타입"
+msgstr "설정 타입"
+
+msgid "설정 JSON"
+msgstr "설정 JSON"
+
+msgid "데이터 수집(메트릭/로그 저장 규칙)을 위한 JSON 설정"
+msgstr "데이터 수집(메트릭/로그 저장 규칙)을 위한 JSON 설정"
+
+msgid "데이터 수집 설정"
+msgstr "데이터 수집 설정"
+
+msgid "데이터 수집 설정 목록"
+msgstr "데이터 수집 설정 목록"
+
+msgid "평균"
+msgstr ""
+
+msgid "최대"
+msgstr ""
+
+msgid "최소"
+msgstr ""
+
+msgid "기간 시작"
+msgstr ""
+
+msgid "기간 종료"
+msgstr ""
+
+msgid "집계 유형"
+msgstr ""
+
+msgid "값"
+msgstr ""
+
+#, fuzzy
+#| msgid "메트릭 소스"
+msgid "메트릭 집계"
+msgstr "메트릭 소스"
+
+#, fuzzy
+#| msgid "메트릭 메타데이터 목록"
+msgid "메트릭 집계 목록"
+msgstr "메트릭 메타데이터 목록"
+
+msgid "Online"
+msgstr "온라인"
+
+msgid "Offline"
+msgstr "오프라인"
+
+msgid "Avail"
+msgstr "여유"
+
+msgid "Free"
+msgstr "여유"
+
+msgid "Alert Management"
+msgstr "알림 관리"
+
+msgid "Rules"
+msgstr "규칙"
+
+msgid "Host Groups"
+msgstr "호스트 그룹"
+
+msgid "Active History"
+msgstr "활성 이력"
+
+msgid "Resolved Archive"
+msgstr "해결된 보관함"
+
+msgid "Refresh All Data"
+msgstr "전체 새로고침"
+
+msgid "Refresh"
+msgstr "새로고침"
+
+msgid "Create New Alert Rule"
+msgstr "새 알림 규칙 생성"
+
+msgid "Rule Name"
+msgstr "규칙 이름"
+
+msgid "High CPU Usage"
+msgstr "CPU 사용량 높음"
+
+msgid "Target Type"
+msgstr "대상 타입"
+
+msgid "Single Host"
+msgstr "개별 호스트"
+
+msgid "Host Group"
+msgstr "호스트 그룹"
+
+msgid "All Hosts"
+msgstr "전체 호스트"
+
+msgid "Host"
+msgstr "호스트"
+
+msgid "Source"
+msgstr "소스"
+
+msgid "Metric"
+msgstr "메트릭"
+
+msgid "Filter Key"
+msgstr "필터 키"
+
+msgid "None"
+msgstr "없음"
+
+msgid "Filter Value"
+msgstr "필터 값"
+
+msgid "Cond"
+msgstr "조건"
+
+msgid "Threshold"
+msgstr "임계치"
+
+#, fuzzy
+#| msgid "Status"
+msgid "sec for Status"
+msgstr "상태"
+
+msgid "Log Keyword"
+msgstr "로그 키워드"
+
+msgid "Optional"
+msgstr "선택 사항"
+
+msgid "Severity"
+msgstr "심각도"
+
+msgid "Info"
+msgstr "정보"
+
+msgid "Warning"
+msgstr "경고"
+
+msgid "Critical"
+msgstr "심각"
+
+msgid "Cooldown"
+msgstr "냉각 기간"
+
+msgid "min"
+msgstr ""
+
+msgid "Email Notification"
+msgstr "이메일 알림"
+
+msgid "Comma separated"
+msgstr ""
+
+msgid "Test Email"
+msgstr "이메일 테스트"
+
+msgid "Test"
+msgstr "테스트"
+
+msgid "Cancel"
+msgstr "취소"
+
+msgid "Add"
+msgstr "추가"
+
+msgid "Active Rules"
+msgstr "활성 규칙"
+
+msgid "Delete Selected"
+msgstr "선택 항목 삭제"
+
+msgid "Status"
+msgstr "상태"
+
+msgid "Name"
+msgstr "이름"
+
+msgid "Target"
+msgstr "대상"
+
+msgid "Condition"
+msgstr "조건"
+
+msgid "Notification"
+msgstr "알림"
+
+msgid "Actions"
+msgstr "작업"
+
+msgid "Create Host Group"
+msgstr "호스트 그룹 생성"
+
+msgid "Group Name"
+msgstr "그룹 이름"
+
+msgid "Production Servers"
+msgstr "운영 서버군"
+
+msgid "Select Hosts"
+msgstr "서버 선택"
+
+msgid "Save Group"
+msgstr "그룹 저장"
+
+msgid "Existing Groups"
+msgstr "기존 그룹 목록"
+
+msgid "Hosts"
+msgstr "서버 목록"
+
+msgid "Unresolved Active Alerts"
+msgstr "미해결 활성 알림"
+
+msgid "Resolve All"
+msgstr "모두 해결"
+
+msgid "Clear All"
+msgstr "모두 삭제"
+
+msgid "Rule"
+msgstr "규칙"
+
+msgid "Triggered Host"
+msgstr "발생 호스트"
+
+msgid "Value"
+msgstr "값"
+
+msgid "Time"
+msgstr "시간"
+
+msgid "Action"
+msgstr "작업"
+
+msgid "Resolved Alert Archive (Last 50)"
+msgstr "해결된 알림 보관함 (최근 50개)"
+
+msgid "Occurred"
+msgstr "발생 시간"
+
+msgid "Resolved"
+msgstr "해결 시간"
+
+msgid "Custom Log (Tail)"
+msgstr "커스텀 로그 (Tail)"
+
+msgid "Server Status Check (API)"
+msgstr "서버 상태 체크 (API)"
+
+msgid "Server Status Check (Ping)"
+msgstr "서버 상태 체크 (Ping)"
+
+msgid "Keyword"
+msgstr "키워드"
+
+msgid "Host Down"
+msgstr "호스트 오프라인"
+
+msgid "Status Abnormal"
+msgstr "상태 비정상"
+
+msgid "Unknown Group"
+msgstr "알 수 없는 그룹"
+
+msgid "ALL HOSTS"
+msgstr "전체 호스트"
+
+msgid "OFFLINE CHECK"
+msgstr "오프라인 체크"
+
+msgid "STATUS CHECK"
+msgstr "상태 체크"
+
+msgid "Edit"
+msgstr "수정"
+
+msgid "Delete"
+msgstr "삭제"
+
+msgid "Delete Rules"
+msgstr "규칙 삭제"
+
+msgid "selected rules?"
+msgstr "개의 선택된 규칙을?"
+
+msgid "Clear History"
+msgstr "이력 초기화"
+
+msgid "Clear all alert history?"
+msgstr "모든 알림 이력을 삭제하시겠습니까?"
+
+msgid "Required"
+msgstr "필수 항목"
+
+msgid "Name is required"
+msgstr "이름은 필수 항목입니다"
+
+msgid "Threshold is required"
+msgstr "임계치는 필수 항목입니다"
+
+msgid "Delete Rule"
+msgstr "규칙 삭제"
+
+msgid "Delete this rule?"
+msgstr "이 규칙을 삭제하시겠습니까?"
+
+msgid "No hosts"
+msgstr "등록된 서버 없음"
+
+msgid "Group Name is required"
+msgstr "그룹 이름은 필수 항목입니다"
+
+msgid "Update Group"
+msgstr "그룹 수정"
+
+msgid "Delete Group"
+msgstr "그룹 삭제"
+
+msgid "Delete this host group?"
+msgstr "이 호스트 그룹을 삭제하시겠습니까?"
+
+msgid "Please enter an address first"
+msgstr "먼저 주소를 입력하십시오"
+
+msgid "Success"
+msgstr "성공"
+
+msgid "Test notification request sent!"
+msgstr "테스트 알림 요청이 전송되었습니다!"
+
+msgid "Resolve all active alerts?"
+msgstr "모든 활성 알림을 해결하시겠습니까?"
+
+msgid "Data Collection"
+msgstr "데이터 수집"
+
+msgid "Targets"
+msgstr "대상"
+
+msgid "Common (Linux)"
+msgstr "공통 (Linux)"
+
+msgid "Common (Windows)"
+msgstr "공통 (Windows)"
+
+msgid "Individual Servers"
+msgstr "개별 서버"
+
+msgid "Reset"
+msgstr "초기화"
+
+msgid "Save Changes"
+msgstr "변경 사항 저장"
+
+msgid ""
+"Configure which metrics/logs to store in the database. Use field selection "
+"for more granular control."
+msgstr ""
+"데이터베이스에 저장할 메트릭/로그를 설정합니다. 세밀한 제어를 위해 필드 선택 "
+"기능을 사용하세요."
+
+msgid "Rule Builder"
+msgstr "규칙 빌더"
+
+msgid "1. Data Source"
+msgstr "1. 데이터 소스"
+
+msgid "Select Source"
+msgstr "소스 선택"
+
+msgid "2. Metric Field"
+msgstr "2. 메트릭 필드"
+
+msgid "All Fields"
+msgstr "모든 필드"
+
+msgid "3. Filter Key"
+msgstr "3. 필터 키"
+
+msgid "4. Filter Value"
+msgstr "4. 필터 값"
+
+msgid "Add Rule"
+msgstr "규칙 추가"
+
+msgid "Manual JSON Editor"
+msgstr "수동 JSON 에디터"
+
+msgid "All Data"
+msgstr "모든 데이터"
+
+msgid "Please select a data source."
+msgstr "데이터 소스를 선택하십시오."
+
+msgid "No active rules"
+msgstr "활성 규칙 없음"
+
+msgid "DB"
+msgstr "데이터베이스"
+
+#, fuzzy
+#| msgid "Delete Rule"
+msgid "Remove Rule"
+msgstr "규칙 삭제"
+
+msgid "Configuration saved successfully."
+msgstr "설정이 성공적으로 저장되었습니다."
+
+msgid "Data Viewer"
+msgstr "데이터 뷰어"
+
+msgid "Search fields..."
+msgstr "필드 검색..."
+
+msgid "Search"
+msgstr "검색"
+
+msgid "Select Server"
+msgstr "서버 선택"
+
+msgid "Select All"
+msgstr "전체 선택"
+
+msgid "Filter Source"
+msgstr "소스 필터"
+
+msgid "All Sources"
+msgstr "모든 소스"
+
+msgid "Select a server and search to view collected data."
+msgstr "서버를 선택하고 검색하여 수집된 데이터를 확인하세요."
+
+msgid "Loading data..."
+msgstr "데이터를 불러오는 중..."
+
+msgid "No data found for the selected criteria."
+msgstr "선택한 조건에 맞는 데이터가 없습니다."
+
+msgid "Fields"
+msgstr "필드"
+
+msgid "Tags"
+msgstr "태그"
+
+msgid "MONITORING"
+msgstr "모니터링"
+
+msgid "Add Memo"
+msgstr "메모 추가"
+
+msgid "Add Panel"
+msgstr "패널 추가"
+
+msgid "Save Layout"
+msgstr "레이아웃 저장"
+
+msgid "Configure New Panel"
+msgstr "새 패널 구성"
+
+msgid "Target Host"
+msgstr "대상 호스트"
+
+msgid "Category"
+msgstr "카테고리"
+
+msgid "System (OS)"
+msgstr "시스템 (OS)"
+
+msgid "Database"
+msgstr "데이터베이스"
+
+msgid "Data Source"
+msgstr "데이터 소스"
+
+msgid "Memory"
+msgstr "메모리"
+
+msgid "Disk"
+msgstr "디스크"
+
+msgid "Network"
+msgstr "네트워크"
+
+msgid "Disk I/O"
+msgstr "디스크 I/O"
+
+msgid "Windows CPU"
+msgstr "Windows CPU"
+
+msgid "DB Type"
+msgstr "DB 종류"
+
+#, fuzzy
+#| msgid "Servers"
+msgid "SQL Server"
+msgstr "서버 목록"
+
+msgid "MariaDB (Upcoming)"
+msgstr "MariaDB (준비 중)"
+
+msgid "Metric Group"
+msgstr "지표 그룹"
+
+msgid "Buffer Manager"
+msgstr "버퍼 매니저"
+
+msgid "General Statistics"
+msgstr "일반 통계"
+
+msgid "SQL Statistics"
+msgstr "SQL 통계"
+
+msgid "Locks"
+msgstr "잠금 (Locks)"
+
+msgid "Metric Field"
+msgstr "메트릭 필드"
+
+msgid "Chart Type"
+msgstr "차트 타입"
+
+msgid "Single Value (Text)"
+msgstr "단일 수치 (텍스트)"
+
+msgid "Line Chart"
+msgstr "라인 차트"
+
+msgid "Metric Filters (Optional)"
+msgstr "메트릭 필터 (선택 사항)"
+
+msgid "Log Keyword Filter (Optional)"
+msgstr "로그 키워드 필터 (선택 사항)"
+
+msgid "e.g., 404, error, GET /admin"
+msgstr "예: 404, error, GET /admin"
+
+msgid "Panel Title"
+msgstr "패널 제목"
+
+msgid "e.g., Main Server Traffic"
+msgstr "예: 메인 서버 트래픽"
+
+msgid "Add to Dashboard"
+msgstr "대시보드에 추가"
+
+msgid "Edit Memo"
+msgstr "메모 수정"
+
+msgid "No hosts available"
+msgstr "사용 가능한 호스트 없음"
+
+msgid "RECV"
+msgstr "수신"
+
+msgid "SENT"
+msgstr "송신"
+
+msgid "READ"
+msgstr "읽기"
+
+msgid "WRITE"
+msgstr "쓰기"
+
+msgid "New Memo"
+msgstr "새 메모"
+
+msgid "Enter title for the memo panel"
+msgstr "메모 패널의 제목을 입력하세요"
+
+msgid "Memo"
+msgstr "메모"
+
+msgid "Write your memo here..."
+msgstr "내용을 입력하세요..."
+
+msgid "Delete Panel"
+msgstr "패널 삭제"
+
+msgid "Are you sure you want to delete this panel?"
+msgstr "이 패널을 삭제하시겠습니까?"
+
+msgid "Layout Saved"
+msgstr "레이아웃 저장됨"
+
+msgid "Dashboard layout has been saved successfully."
+msgstr "대시보드 레이아웃이 성공적으로 저장되었습니다."
+
+msgid "Server Management"
+msgstr "서버 관리"
+
+msgid "Current DB Storage Usage"
+msgstr "현재 DB 저장소 사용량"
+
+msgid "Batch Retention"
+msgstr "보관 기간 일괄 설정"
+
+msgid "Register Selected"
+msgstr "선택 항목 등록"
+
+msgid "Batch Register"
+msgstr "일괄 등록"
+
+msgid "STATUS"
+msgstr "상태"
+
+msgid "NICKNAME / HOSTNAME"
+msgstr "별칭 / 호스트네임"
+
+msgid "DETECTED IP"
+msgstr "감지된 IP"
+
+msgid "RETENTION"
+msgstr "보관 기간"
+
+msgid "REGISTERED AT"
+msgstr "등록 일시"
+
+msgid "ACTIONS"
+msgstr "작업"
+
+msgid "Loading servers..."
+msgstr "서버 목록 로딩 중..."
+
+msgid "Batch Retention Settings"
+msgstr "보관 기간 일괄 설정"
+
+msgid "Retention Period (Days)"
+msgstr "보관 기간 (일)"
+
+msgid "Days"
+msgstr "일"
+
+msgid "Default"
+msgstr "기본값"
+
+msgid "Applies to all selected servers."
+msgstr "선택한 모든 서버에 적용됩니다."
+
+msgid "Apply to Selected"
+msgstr "선택 항목에 적용"
+
+msgid "Batch Register Servers"
+msgstr "서버 일괄 등록"
+
+msgid "Enter Hostnames (One per line)"
+msgstr "호스트네임 입력 (한 줄에 하나씩)"
+
+msgid "Existing temporary data for these hosts will be cleared."
+msgstr "이 호스트들에 대한 기존 임시 데이터가 삭제됩니다."
+
+msgid "Register All"
+msgstr "모두 등록"
+
+msgid "IP Refresh Failed"
+msgstr "IP 갱신 실패"
+
+msgid "Failed to refresh IP: "
+msgstr "IP 갱신에 실패했습니다: "
+
+msgid "No servers detected. Please check if Telegraf is sending data."
+msgstr "감지된 서버가 없습니다. Telegraf가 데이터를 전송 중인지 확인하십시오."
+
+msgid "Managed"
+msgstr "관리 중"
+
+msgid "Detected (New)"
+msgstr "감지됨 (신규)"
+
+msgid "Register"
+msgstr "등록"
+
+msgid "d"
+msgstr "일"
+
+msgid "3d (Fixed)"
+msgstr "3일 (고정)"
+
+msgid "Public IP (from agent payload)"
+msgstr "공인 IP (에이전트 정보)"
+
+msgid "Refresh Public IP"
+msgstr "공인 IP 갱신"
+
+msgid "Clear IP Info"
+msgstr "IP 정보 초기화"
+
+msgid "Incoming IP (connection source)"
+msgstr "접속 IP (연결 소스)"
+
+msgid "Change Retention"
+msgstr "보관 기간 변경"
+
+msgid "Enter retention period in days:"
+msgstr "보관 기간을 일 단위로 입력하세요:"
+
+msgid "Do you want to delete"
+msgstr "삭제하시겠습니까?"
+
+msgid "selected servers?"
+msgstr "개의 선택된 서버를?"
+
+msgid "* This action cannot be undone."
+msgstr "* 이 작업은 취소할 수 없습니다."
+
+msgid "Do you want to register"
+msgstr "등록하시겠습니까?"
+
+msgid "* All temporary data for these hosts will be cleared upon registration."
+msgstr "등록 시 이 호스트들의 모든 임시 데이터가 삭제됩니다."
+
+msgid "Clear stored IP info for this server?"
+msgstr "이 서버의 저장된 IP 정보를 초기화하시겠습니까?"
+
+msgid "Please enter a nickname for"
+msgstr "서버의 별칭을 입력하십시오: "
+
+msgid "* All temporary data for this host will be cleared upon registration."
+msgstr "* 등록 시 이 호스트의 모든 임시 데이터가 삭제됩니다."
+
+msgid "Register Server"
+msgstr "서버 등록"
+
+msgid "Edit Nickname"
+msgstr "별칭 수정"
+
+msgid "Hostname:"
+msgstr "호스트네임:"
+
+msgid "Delete Server"
+msgstr "서버 삭제"
+
+msgid "Do you want to delete this server?"
+msgstr "이 서버를 삭제하시겠습니까?"
+
+msgid ""
+"* This action cannot be undone and all related metrics, dashboards, and "
+"alerts will be permanently deleted."
+msgstr ""
+"* 이 작업은 취소할 수 없으며 관련 메트릭, 대시보드 및 알림이 영구적으로 삭제"
+"됩니다."
+
+msgid "Server Status"
+msgstr "서버 상태"
+
+msgid "Collected at"
+msgstr "수집 시각"
+
+msgid ""
+"This is a snapshot taken on page load (not real-time). Refresh to update."
+msgstr "페이지 진입 시점에 수집된 스냅샷입니다(실시간 아님). 새로고침하면 갱신됩니다."
+
+msgid "Linux Servers"
+msgstr "리눅스 서버"
+
+msgid "Download CSV"
+msgstr "CSV 다운로드"
+
+msgid "Server"
+msgstr "서버"
+
+msgid "Disk Partitions"
+msgstr "디스크 파티션"
+
+msgid "Last Seen"
+msgstr "최근 수신"
+
+msgid "No Linux servers found"
+msgstr "리눅스 서버가 없습니다"
+
+msgid "Windows Servers"
+msgstr "윈도우 서버"
+
+msgid "No Windows servers found"
+msgstr "윈도우 서버가 없습니다"
+
+msgid "{} seconds no data received"
+msgstr "{}초간 데이터 수집 없음"
+
+msgid "{} seconds no ping response"
+msgstr "{}초간 핑 응답 없음"
+
+msgid "Nickname"
+msgstr "별칭"
+
+msgid "Hostname"
+msgstr "호스트명"
+
+msgid "CPU (%)"
+msgstr "CPU (%)"
+
+msgid "RAM (%)"
+msgstr "RAM (%)"
+
+msgid "RAM Used"
+msgstr "RAM 사용량"
+
+msgid "RAM Total"
+msgstr "RAM 전체"
+
+msgid "Mount"
+msgstr "마운트"
+
+msgid "Device"
+msgstr "장치"
+
+msgid "FS Type"
+msgstr "파일시스템"
+
+msgid "Disk (%)"
+msgstr "디스크 (%)"
+
+msgid "Disk Used"
+msgstr "디스크 사용량"
+
+msgid "Disk Total"
+msgstr "디스크 전체"
+
+msgid "Disk Free"
+msgstr "디스크 여유"
+
+msgid "Toggle Theme"
+msgstr "테마 변경"
+
+msgid "User Profile"
+msgstr "사용자 프로필"
+
+msgid "Dashboard"
+msgstr "대시보드"
+
+msgid "Servers"
+msgstr "서버 목록"
+
+msgid "No servers found"
+msgstr "검색된 서버 없음"
+
+msgid "Manage"
+msgstr "관리"
+
+msgid "Alerts"
+msgstr "알람"
+
+msgid "Login"
+msgstr "로그인"
+
+msgid "Profile"
+msgstr "프로필"
+
+msgid "Language"
+msgstr "언어"
+
+msgid "Admin Page"
+msgstr "관리자 페이지"
+
+msgid "Logout"
+msgstr "로그아웃"
+
+msgid "Confirm"
+msgstr "확인"
+
+msgid "Username"
+msgstr "사용자 이름"
+
+msgid "Password"
+msgstr "비밀번호"
+
+msgid "Invalid username or password."
+msgstr "사용자 이름 또는 비밀번호가 올바르지 않습니다."
+
+#~ msgid "Log Keyword is required"
+#~ msgstr "로그 키워드는 필수 항목입니다"
+
+#~ msgid "Discord/Slack Webhook"
+#~ msgstr "Discord/Slack 웹훅"
+
+#~ msgid "Test Webhook"
+#~ msgstr "웹훅 테스트"
+
+#~ msgid "Confirm Registration"
+#~ msgstr "등록 확인"
+
+#~ msgid "Do you want to register this server?"
+#~ msgstr "이 서버를 등록하시겠습니까?"
+
+#~ msgid "CPU (Central Processing Unit)"
+#~ msgstr "CPU (중앙 처리 장치)"
+
+#~ msgid "Memory (RAM Usage)"
+#~ msgstr "메모리 (RAM 사용량)"
+
+#~ msgid "Disk (Storage)"
+#~ msgstr "디스크 (저장 공간)"
+
+#~ msgid "Network (Traffic)"
+#~ msgstr "네트워크 (트래픽)"

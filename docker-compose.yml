@@ -1,0 +1,62 @@
+services:
+  monitor:
+    image: python:3.12-slim
+    container_name: django_monitor
+    mem_limit: 2000m
+    ports:
+      - "8001:8000"
+    volumes:
+      - .:/app
+      - django_static:/app/data/staticfiles
+    working_dir: /app
+    entrypoint: ["/bin/bash", "/app/data/entrypoint.sh"]
+    env_file:
+      - data/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_PORT=8000
+    restart: always
+    depends_on:
+      - mariadb
+      - valkey
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_monitor
+    ports:
+      - "18080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - django_static:/usr/share/nginx/html/static:ro
+    restart: always
+    depends_on:
+      - monitor
+
+  mariadb:
+    image: mariadb:12.2.2
+    container_name: mariadb_AgnMonitor
+    restart: always
+    mem_limit: 2000m
+    # DB 자격증명은 data/.env 의 MARIADB_* / MARIADB_DATABASE 변수에서 주입
+    env_file:
+      - data/.env
+    command:
+      - --innodb-flush-log-at-trx-commit=2
+      - --innodb-buffer-pool-size=1024M
+      - --innodb-log-file-size=256M
+      - --innodb-io-capacity=5000
+      - --max-connections=200
+      - --table-open-cache=4000
+      - --query-cache-size=0
+    volumes:
+      - ./mariadb_data:/var/lib/mysql
+
+  valkey:
+    image: valkey/valkey:9.0.4
+    container_name: valkey_AgnMonitor
+    restart: always
+    command: valkey-server --save 3600 1
+    volumes:
+      - ./valkey_data:/data
+volumes:
+  django_static:

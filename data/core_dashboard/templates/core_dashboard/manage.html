@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Server Management - AgnMonitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h2 class="text-info fw-bold m-0">{% trans "Server Management" %}</h2>
+        <span class="badge db-badge-adaptive py-2" id="db-size-badge" title="{% trans 'Current DB Storage Usage' %}">
+            <i class="bi bi-database me-1"></i> DB: <span id="db-size-value">...</span>
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        <div id="batch-actions" style="display:none;" class="me-2">
+            <button class="btn btn-sm btn-info" onclick="openBatchRetentionModal()">{% trans "Batch Retention" %}</button>
+            <button class="btn btn-sm btn-primary" onclick="confirmBatchRegisterSelected()">{% trans "Register Selected" %}</button>
+            <button class="btn btn-sm btn-danger" onclick="confirmBatchDelete()">{% trans "Delete Selected" %}</button>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="openBatchRegisterModal()">{% trans "Batch Register" %}</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">{% trans "Refresh" %}</button>
+    </div>
+</div>
+
+<div class="server-list-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th class="ps-4" style="width: 40px;"><input type="checkbox" class="form-check-input" id="select-all" onclick="toggleSelectAll(this)"></th>
+                    <th>{% trans "STATUS" %}</th>
+                    <th>{% trans "NICKNAME / HOSTNAME" %}</th>
+                    <th>{% trans "DETECTED IP" %}</th>
+                    <th>{% trans "RETENTION" %}</th>
+                    <th>{% trans "REGISTERED AT" %}</th>
+                    <th class="text-end pe-4">{% trans "ACTIONS" %}</th>
+                </tr>
+            </thead>
+            <tbody id="server-list">
+                <tr><td colspan="7" class="text-center text-muted py-5">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    {% trans "Loading servers..." %}
+                </td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Batch Retention Modal -->
+<div class="modal" id="batchRetentionModal" tabindex="-1" style="display: none;">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Batch Retention Settings" %}</h5>
+        <button type="button" class="btn-close" onclick="window.closeCommonModal('batchRetentionModal')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label text-muted small">{% trans "Retention Period (Days)" %}</label>
+            <select id="batch-retention-days" class="form-select">
+                <option value="3">3 {% trans "Days" %}</option>
+                <option value="7">7 {% trans "Days" %}</option>
+                <option value="14" selected>14 {% trans "Days" %} ({% trans "Default" %})</option>
+                <option value="30">30 {% trans "Days" %}</option>
+                <option value="90">90 {% trans "Days" %}</option>
+            </select>
+        </div>
+        <p class="small text-muted mb-0">* {% trans "Applies to all selected servers." %}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary w-100" onclick="confirmBatchRetention()">{% trans "Apply to Selected" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Register Modal -->
+<div class="modal" id="batchRegisterModal" tabindex="-1" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Batch Register Servers" %}</h5>
+        <button type="button" class="btn-close" onclick="window.closeCommonModal('batchRegisterModal')"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label text-muted small">{% trans "Enter Hostnames (One per line)" %}</label>
+            <textarea id="batch-hostnames" class="form-control" rows="10" placeholder="server-01&#10;server-02&#10;..."></textarea>
+        </div>
+        <p class="small text-warning mb-0">* {% trans "Existing temporary data for these hosts will be cleared." %}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary w-100" onclick="confirmBatchRegister()">{% trans "Register All" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (typeof socket === 'undefined') {
+        var socket = initMonitoringSocket();
+        var lastChecked = null; // For shift-click
+    }
+
+
+    function requestInitialData() { socket.send(JSON.stringify({'action': 'get_managed_servers'})); }
+    if (socket.readyState === WebSocket.OPEN) { requestInitialData(); }
+    socket.onopen = () => { requestInitialData(); };
+
+    socket.onmessage = (e) => {
+        var data = JSON.parse(e.data);
+        if (data.type === 'managed_servers') { 
+            // Handle both old and new data structures for robustness
+            var servers = Array.isArray(data.servers) ? data.servers : (data.servers && Array.isArray(data.servers.servers) ? data.servers.servers : []);
+            var dbSize = data.db_size || (data.servers && data.servers.db_size ? data.servers.db_size : null);
+            
+            renderServerList(servers); 
+            if (dbSize) {
+                document.getElementById('db-size-value').innerText = dbSize;
+            }
+        }
+        else if (data.type === 'server_status_update') {
+            const apiBadge = document.getElementById(`status-api-${data.hostname}`);
+            if (apiBadge) {
+                apiBadge.className = `badge ms-1 ${data.status_api === 'normal' ? 'bg-success' : 'bg-warning text-dark'}`;
+            }
+        }
+        else if (['server_registered', 'server_updated', 'server_deleted', 'ip_refreshed', 'retention_updated'].includes(data.type)) { 
+            socket.send(JSON.stringify({'action': 'get_managed_servers'})); 
+            if (data.type === 'ip_refreshed' && (data.ip.startsWith("Refresh Failed") || data.ip.startsWith("No IP"))) {
+                showAlert('{% trans "IP Refresh Failed" %}', '{% trans "Failed to refresh IP: " %}' + data.ip);
+            }
+        }
+    };
+
+    function renderServerList(servers) {
+        const tbody = document.getElementById('server-list');
+        tbody.innerHTML = '';
+        document.getElementById('select-all').checked = false;
+        updateBatchUI();
+        
+        if (!servers || servers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-5">{% trans "No servers detected. Please check if Telegraf is sending data." %}</td></tr>';
+            return;
+        }
+
+        servers.forEach((s, index) => {
+            const tr = document.createElement('tr');
+            
+            let statusBadge = '';
+            if (s.is_registered) {
+                const apiClass = s.status_api === 'normal' ? 'bg-success' : 'bg-warning text-dark';
+                
+                statusBadge = `
+                    <span class="badge bg-primary">{% trans "Managed" %}</span>
+                    <span id="status-api-${s.hostname}" class="badge ms-1 ${apiClass}" title="API Status">API</span>
+                `;
+            } else {
+                statusBadge = '<span class="badge bg-warning text-dark">{% trans "Detected (New)" %}</span>';
+            }
+            
+            let actionButtons = '';
+            if (s.is_registered) {
+                actionButtons = `
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="openEditModal('${s.hostname}', '${s.nickname}')">{% trans "Edit" %}</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteServer('${s.hostname}')">{% trans "Delete" %}</button>
+                `;
+            } else {
+                actionButtons = `
+                    <button class="btn btn-sm btn-primary px-3 me-1" onclick="registerDetectedServer('${s.hostname}')">{% trans "Register" %}</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteServer('${s.hostname}')">{% trans "Delete" %}</button>
+                `;
+            }
+
+            const retentionDisplay = s.is_registered 
+                ? `<div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-dark border border-secondary">${s.retention_days}{% trans "d" %}</span>
+                    <button class="btn btn-sm btn-link p-0 text-muted" onclick="changeRetention('${s.hostname}', ${s.retention_days})"><i class="bi bi-pencil-square"></i></button>
+                   </div>`
+                : '<span class="text-muted small">{% trans "3d (Fixed)" %}</span>';
+
+            tr.innerHTML = `
+                <td class="ps-4"><input type="checkbox" class="form-check-input server-checkbox" value="${s.hostname}" data-index="${index}" onclick="handleCheckboxClick(event, this)"></td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div class="fw-bold text-info">${s.nickname || s.hostname}</div>
+                    <div class="small text-muted" style="font-size: 0.75rem;">${s.hostname}</div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center mb-1" title="{% trans 'Public IP (from agent payload)' %}">
+                        <span class="badge bg-secondary font-monospace badge-ip me-1" style="min-width: 120px;">${s.ip}</span>
+                        <small class="text-muted" style="font-size: 0.65rem;">PUB</small>
+                        <div class="d-flex align-items-center ms-2">
+                            <button class="btn btn-sm btn-link p-0 text-info" onclick="refreshIp('${s.hostname}')" title="{% trans 'Refresh Public IP' %}">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                            <button class="btn btn-sm btn-link p-0 text-danger ms-2" onclick="clearIp('${s.hostname}')" title="{% trans 'Clear IP Info' %}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center" title="{% trans 'Incoming IP (connection source)' %}">
+                        <span class="badge bg-dark border border-secondary font-monospace badge-ip me-1" style="min-width: 120px;">${s.reachable_ip}</span>
+                        <small class="text-muted" style="font-size: 0.65rem;">IN</small>
+                    </div>
+                </td>
+                <td>${retentionDisplay}</td>
+                <td class="small text-muted">${s.created_at}</td>
+                <td class="text-end pe-4">
+                    ${actionButtons}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    var lastCheckedValue = null;
+
+    function handleCheckboxClick(e, current) {
+        if (e.shiftKey && lastCheckedValue) {
+            const checkboxes = Array.from(document.querySelectorAll('.server-checkbox'));
+            let start = checkboxes.findIndex(cb => cb.value === lastCheckedValue);
+            let end = checkboxes.indexOf(current);
+            
+            if (start !== -1 && end !== -1) {
+                checkboxes.slice(Math.min(start, end), Math.max(start, end) + 1)
+                          .forEach(cb => cb.checked = current.checked);
+            }
+        }
+        
+        lastCheckedValue = current.value;
+        updateBatchUI();
+    }
+
+    function toggleSelectAll(master) {
+        document.querySelectorAll('.server-checkbox').forEach(cb => cb.checked = master.checked);
+        updateBatchUI();
+    }
+
+    function updateBatchUI() {
+        const selected = document.querySelectorAll('.server-checkbox:checked').length;
+        document.getElementById('batch-actions').style.display = selected > 0 ? 'block' : 'none';
+    }
+
+    function changeRetention(hostname, current) {
+        showPrompt('{% trans "Change Retention" %}', '{% trans "Enter retention period in days:" %}', current, (days) => {
+            if (days && !isNaN(days)) {
+                socket.send(JSON.stringify({'action': 'update_server_retention', 'hostname': hostname, 'days': parseInt(days)}));
+            }
+        });
+    }
+
+    function openBatchRetentionModal() {
+        window.openCommonModal('batchRetentionModal');
+    }
+
+    function confirmBatchRetention() {
+        const hostnames = Array.from(document.querySelectorAll('.server-checkbox:checked')).map(cb => cb.value);
+        const days = document.getElementById('batch-retention-days').value;
+        socket.send(JSON.stringify({'action': 'batch_update_retention', 'hostnames': hostnames, 'days': parseInt(days)}));
+        window.closeCommonModal('batchRetentionModal');
+    }
+
+    function confirmBatchDelete() {
+        const hostnames = Array.from(document.querySelectorAll('.server-checkbox:checked')).map(cb => cb.value);
+        showConfirm('{% trans "Delete Selected" %}', '{% trans "Do you want to delete" %} ' + hostnames.length + ' {% trans "selected servers?" %}<br><br><small class="text-danger">{% trans "* This action cannot be undone." %}</small>', () => {
+            socket.send(JSON.stringify({'action': 'batch_delete_servers', 'hostnames': hostnames}));
+        });
+    }
+
+    function confirmBatchRegisterSelected() {
+        const hostnames = Array.from(document.querySelectorAll('.server-checkbox:checked')).map(cb => cb.value);
+        showConfirm('{% trans "Batch Register" %}', '{% trans "Do you want to register" %} ' + hostnames.length + ' {% trans "selected servers?" %}<br><br><small class="text-warning">{% trans "* All temporary data for these hosts will be cleared upon registration." %}</small>', () => {
+            socket.send(JSON.stringify({'action': 'batch_register_servers', 'hostnames': hostnames}));
+        });
+    }
+
+    function openBatchRegisterModal() {
+        window.openCommonModal('batchRegisterModal');
+    }
+
+    function confirmBatchRegister() {
+        const text = document.getElementById('batch-hostnames').value;
+        const hostnames = text.split('\n').map(h => h.trim()).filter(h => h !== '');
+        if (hostnames.length > 0) {
+            socket.send(JSON.stringify({'action': 'batch_register_servers', 'hostnames': hostnames}));
+            window.closeCommonModal('batchRegisterModal');
+        }
+    }
+
+    function refreshIp(hostname) { socket.send(JSON.stringify({'action': 'refresh_server_ip', 'hostname': hostname})); }
+    function clearIp(hostname) { 
+        showConfirm('{% trans "Clear IP Info" %}', '{% trans "Clear stored IP info for this server?" %}', () => {
+            socket.send(JSON.stringify({'action': 'clear_server_ip', 'hostname': hostname}));
+        });
+    }
+    function registerDetectedServer(hostname) {
+        const message = `{% trans "Please enter a nickname for" %} <b>${hostname}</b> ({% trans "Optional" %}):<br><br>` +
+                        `<small class="text-warning">{% trans "* All temporary data for this host will be cleared upon registration." %}</small>`;
+        
+        showPrompt('{% trans "Register Server" %}', message, "", (nickname) => {
+            if (nickname !== null) {
+                socket.send(JSON.stringify({'action': 'register_server', 'hostname': hostname, 'nickname': nickname}));
+            }
+        });
+    }
+    function openEditModal(hostname, nickname) { 
+        showPrompt('{% trans "Edit Nickname" %}', '{% trans "Hostname:" %} ' + hostname, nickname || "", (newNickname) => {
+            if (newNickname !== null) {
+                socket.send(JSON.stringify({'action': 'update_server', 'hostname': hostname, 'nickname': newNickname}));
+            }
+        });
+    }
+    function deleteServer(hostname) { 
+        showConfirm('{% trans "Delete Server" %}', '{% trans "Do you want to delete this server?" %}<br><br><small class="text-danger">{% trans "* This action cannot be undone and all related metrics, dashboards, and alerts will be permanently deleted." %}</small>', () => {
+            socket.send(JSON.stringify({'action': 'delete_server', 'hostname': hostname}));
+        });
+    }
+</script>
+{% endblock %}

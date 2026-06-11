@@ -1,0 +1,536 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-13 16:24+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: config/settings.py:80
+msgid "English"
+msgstr ""
+
+#: config/settings.py:81
+msgid "Korean"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:4
+#: core_dashboard/templates/core_dashboard/alerts.html:38
+msgid "Alert Management"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:45
+msgid "Rules"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:48
+msgid "Active History"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:51
+msgid "Resolved Archive"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:60
+msgid "Create New Alert Rule"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:63
+msgid "Rule Name"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:64
+msgid "High CPU Usage"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:67
+msgid "Host"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:71
+msgid "Source"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:75
+msgid "Metric"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:79
+#: core_dashboard/templates/core_dashboard/index.html:115
+#: core_dashboard/templates/core_dashboard/index.html:322
+msgid "Filter Key"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:81
+#: core_dashboard/templates/core_dashboard/alerts.html:87
+msgid "None"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:85
+#: core_dashboard/templates/core_dashboard/index.html:120
+#: core_dashboard/templates/core_dashboard/index.html:323
+#: core_dashboard/templates/core_dashboard/index.html:351
+msgid "Filter Value"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:91
+msgid "Cond"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:96
+msgid "Offline"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:100
+msgid "Threshold"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:104
+msgid "Log Keyword"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:108
+msgid "Severity"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:110
+msgid "Info"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:111
+msgid "Warning"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:112
+msgid "Critical"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:116
+msgid "Cooldown"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:125
+msgid "Discord/Slack Webhook"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:128
+msgid "Test Webhook"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:128
+#: core_dashboard/templates/core_dashboard/alerts.html:135
+msgid "Test"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:132
+msgid "Email Notification"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:135
+msgid "Test Email"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:139
+msgid "Cancel"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:140
+#: core_dashboard/templates/core_dashboard/alerts.html:452
+msgid "Add"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:147
+msgid "Active Rules"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:152
+msgid "Name"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:153
+msgid "Target"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:154
+msgid "Condition"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:155
+msgid "Notification"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:156
+msgid "Actions"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:170
+msgid "Unresolved Active Alerts"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:172
+msgid "Resolve All"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:173
+msgid "Clear All"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:180
+#: core_dashboard/templates/core_dashboard/alerts.html:199
+msgid "Rule"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:181
+#: core_dashboard/templates/core_dashboard/alerts.html:200
+msgid "Value"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:182
+msgid "Time"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:183
+msgid "Action"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:194
+msgid "Resolved Alert Archive (Last 50)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:201
+msgid "Occurred"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:202
+msgid "Resolved"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:218
+#, python-format
+msgid "CPU Usage (%%)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:219
+#: core_dashboard/templates/core_dashboard/index.html:154
+#, python-format
+msgid "Usage (%%)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:220
+#: core_dashboard/templates/core_dashboard/index.html:155
+msgid "Used"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:221
+#: core_dashboard/templates/core_dashboard/index.html:156
+msgid "Free"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:222
+#: core_dashboard/templates/core_dashboard/index.html:158
+msgid "RECV Speed"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:223
+#: core_dashboard/templates/core_dashboard/index.html:159
+msgid "SENT Speed"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:224
+#: core_dashboard/templates/core_dashboard/index.html:162
+msgid "READ Speed"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:225
+#: core_dashboard/templates/core_dashboard/index.html:163
+msgid "WRITE Speed"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:469
+msgid "Clear all alert history?"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:495
+#: core_dashboard/templates/core_dashboard/alerts.html:528
+msgid "Name is required"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:496
+#: core_dashboard/templates/core_dashboard/alerts.html:529
+msgid "Threshold is required"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:497
+msgid "Log Keyword is required"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:535
+msgid "Delete this rule?"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:542
+msgid "Please enter an address first"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:549
+msgid "Test notification request sent!"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/alerts.html:598
+msgid "Resolve all active alerts?"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:70
+msgid "MONITORING"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:72
+msgid "Add Panel"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:73
+msgid "Save Layout"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:86
+msgid "Configure New Panel"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:92
+msgid "1. Target Host"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:96
+msgid "2. Data Source"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:98
+msgid "CPU (Central Processing Unit)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:99
+msgid "Memory (RAM Usage)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:100
+msgid "Disk (Storage)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:101
+msgid "Network (Traffic)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:102
+msgid "Disk I/O"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:103
+msgid "Custom Log (Tail)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:107
+msgid "3. Metric Field"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:111
+msgid "4. Filters (Partition/Interface)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:126
+msgid "4. Log Keyword Filter (Optional)"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:127
+msgid "e.g., 404, error, GET /admin"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:130
+msgid "5. Panel Title"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:131
+msgid "e.g., Main Server Traffic"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:136
+msgid "Add to Dashboard"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:153
+msgid "Usage"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:157
+msgid "Total"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:160
+msgid "Packets RECV Speed"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:161
+msgid "Packets SENT Speed"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:164
+msgid "Read Latency"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:165
+msgid "Write Latency"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:166
+msgid "Log Text"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:433
+msgid "Are you sure you want to delete this panel?"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/index.html:443
+msgid "Layout saved!"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:24
+msgid "Server Management"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:26
+msgid "Refresh"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:35
+msgid "STATUS"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:36
+msgid "NICKNAME / HOSTNAME"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:37
+msgid "DETECTED IP"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:38
+msgid "REGISTERED AT"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:39
+msgid "ACTIONS"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:45
+msgid "Loading servers..."
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:57
+msgid "Edit Server Nickname"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:63
+msgid "Hostname"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:67
+msgid "New Nickname"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:68
+msgid "e.g., Main Database"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:72
+msgid "Save Changes"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:102
+msgid "No servers detected. Please check if Telegraf is sending data."
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:145
+msgid "Please enter a nickname for"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:145
+msgid "Optional"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:148
+msgid "Do you want to register this server?"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:148
+msgid "* All temporary data for this host will be cleared upon registration."
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:177
+msgid "Do you want to delete this server?"
+msgstr ""
+
+#: core_dashboard/templates/core_dashboard/manage.html:177
+msgid ""
+"* This action cannot be undone and all related metrics, dashboards, and "
+"alerts will be permanently deleted."
+msgstr ""
+
+#: templates/base.html:86
+msgid "Toggle Theme"
+msgstr ""
+
+#: templates/base.html:98
+msgid "Dashboard"
+msgstr ""
+
+#: templates/base.html:101
+msgid "Servers"
+msgstr ""
+
+#: templates/base.html:107
+msgid "No servers found"
+msgstr ""
+
+#: templates/base.html:111
+msgid "Manage"
+msgstr ""
+
+#: templates/base.html:112
+msgid "Alerts"
+msgstr ""
+
+#: templates/base.html:113
+msgid "Logout"
+msgstr ""
+
+#: templates/base.html:115 templates/registration/login.html:4
+#: templates/registration/login.html:11 templates/registration/login.html:22
+msgid "Login"
+msgstr ""
+
+#: templates/base.html:128
+msgid "All rights reserved."
+msgstr ""
+
+#: templates/registration/login.html:15
+msgid "Username"
+msgstr ""
+
+#: templates/registration/login.html:19
+msgid "Password"
+msgstr ""
+
+#: templates/registration/login.html:26
+msgid "Invalid username or password."
+msgstr ""

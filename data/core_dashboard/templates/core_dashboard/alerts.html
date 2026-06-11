@@ -1,0 +1,697 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Alert Management" %} - AgnMonitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-warning fw-bold m-0">{% trans "Alert Management" %}</h2>
+</div>
+
+<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; width: 350px;"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <ul class="nav nav-pills" id="pills-tab" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-rules" onclick="refreshRules()">{% trans "Rules" %}</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-groups" onclick="refreshGroups()">{% trans "Host Groups" %}</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-history" onclick="loadAlertHistory()">{% trans "Active History" %}</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-archive" onclick="loadResolvedHistory()">{% trans "Resolved Archive" %}</button></li>
+  </ul>
+  <button class="btn btn-sm btn-outline-warning" onclick="refreshAll()" title="{% trans 'Refresh All Data' %}"><i class="bi bi-arrow-clockwise"></i> {% trans "Refresh" %}</button>
+</div>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-rules">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="alert-card">
+                    <h5 class="mb-4">{% trans "Create New Alert Rule" %}</h5>
+                    <div class="row g-4">
+                        <!-- Row 1: Basic Info -->
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">{% trans "Rule Name" %}</label>
+                            <input type="text" id="a-name" class="form-control" placeholder="{% trans 'High CPU Usage' %}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">{% trans "Target Type" %}</label>
+                            <select id="a-target-type" class="form-select" onchange="onTargetTypeChange()">
+                                <option value="single">{% trans "Single Host" %}</option>
+                                <option value="group">{% trans "Host Group" %}</option>
+                                <option value="all">{% trans "All Hosts" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4" id="a-host-container">
+                            <label class="form-label small text-muted">{% trans "Host" %}</label>
+                            <select id="a-host" class="form-select"></select>
+                        </div>
+                        <div class="col-md-4" id="a-group-container" style="display:none;">
+                            <label class="form-label small text-muted">{% trans "Host Group" %}</label>
+                            <select id="a-group" class="form-select"></select>
+                        </div>
+
+                        <!-- Row 2: Metric Selection -->
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "Source" %}</label>
+                            <select id="a-source" class="form-select" onchange="refreshAlertFields()"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "Metric" %}</label>
+                            <select id="a-field" class="form-select"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "Filter Key" %}</label>
+                            <select id="a-f-key" class="form-select" onchange="onAlertFilterKeyChange()">
+                                <option value="">{% trans "None" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">{% trans "Filter Value" %}</label>
+                            <select id="a-f-val" class="form-select">
+                                <option value="">{% trans "None" %}</option>
+                            </select>
+                        </div>
+
+                        <!-- Row 3: Conditions & Notifications -->
+                        <div class="col-md-2" id="a-cond-container">
+                            <label class="form-label small text-muted">{% trans "Cond" %}</label>
+                            <select id="a-cond" class="form-select">
+                                <option value="gt">></option>
+                                <option value="lt"><</option>
+                                <option value="eq">=</option>
+                                <option value="host_down">{% trans "Offline" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2" id="threshold-container">
+                            <label class="form-label small text-muted">{% trans "Threshold" %} ({% trans "sec for Status" %})</label>
+                            <input type="number" id="a-threshold" class="form-control" placeholder="90">
+                        </div>
+                        <div class="col-md-4" id="keyword-container" style="display:none;">
+                            <label class="form-label small text-muted">{% trans "Log Keyword" %} <span class="text-secondary">({% trans "Optional" %})</span></label>
+                            <input type="text" id="a-keyword" class="form-control" placeholder="404, error">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">{% trans "Severity" %}</label>
+                            <select id="a-severity" class="form-select">
+                                <option value="info">{% trans "Info" %}</option>
+                                <option value="warning" selected>{% trans "Warning" %}</option>
+                                <option value="critical">{% trans "Critical" %}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">{% trans "Cooldown" %} ({% trans "min" %})</label>
+                            <input type="number" id="a-cooldown" class="form-control" value="5" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">{% trans "Email Notification" %} ({% trans "Comma separated" %})</label>
+                            <div class="input-group">
+                                <input type="text" id="a-email" class="form-control" placeholder="admin@example.com, dev@example.com">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="testNotification('email')" title="{% trans 'Test Email' %}">{% trans "Test" %}</button>
+                            </div>
+                        </div>
+                        <div class="col-md-12 d-flex align-items-end justify-content-end mt-2">
+                            <button id="btn-cancel-edit" class="btn btn-outline-secondary px-4 me-2" style="display:none;" onclick="cancelEdit()">{% trans "Cancel" %}</button>
+                            <button id="btn-add-update" class="btn btn-warning px-5" onclick="saveAlertRule()">{% trans "Add" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="alert-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="m-0">{% trans "Active Rules" %}</h5>
+                        <div id="rule-batch-actions" style="display: none;">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSelectedRules()">
+                                <i class="bi bi-trash me-1"></i> {% trans "Delete Selected" %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="select-all-rules" class="form-check-input" onclick="toggleSelectAllRules(this)"></th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Name" %}</th>
+                                    <th>{% trans "Target" %}</th>
+                                    <th>{% trans "Metric" %}</th>
+                                    <th>{% trans "Condition" %}</th>
+                                    <th>{% trans "Notification" %}</th>
+                                    <th class="text-end">{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alert-rules-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-groups" class="tab-pane fade">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="alert-card">
+                    <h5 class="mb-4">{% trans "Create Host Group" %}</h5>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{% trans "Group Name" %}</label>
+                        <input type="text" id="g-name" class="form-control" placeholder="{% trans 'Production Servers' %}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">{% trans "Select Hosts" %}</label>
+                        <div id="g-host-selection" class="border rounded p-2" style="max-height: 200px; overflow-y: auto; background: var(--input-bg);">
+                            <!-- Host checkboxes will be populated here -->
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button id="btn-cancel-g-edit" class="btn btn-outline-secondary btn-sm me-2" style="display:none;" onclick="cancelGroupEdit()">{% trans "Cancel" %}</button>
+                        <button id="btn-save-group" class="btn btn-warning btn-sm px-4" onclick="saveHostGroup()">{% trans "Save Group" %}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="alert-card">
+                    <h5 class="mb-4">{% trans "Existing Groups" %}</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Name" %}</th>
+                                    <th>{% trans "Hosts" %}</th>
+                                    <th class="text-end">{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="host-groups-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-history" class="tab-pane fade">
+        <div class="alert-card">
+            <div class="d-flex justify-content-between align-items-center mb-4"><h5 class="m-0">{% trans "Unresolved Active Alerts" %}</h5><div><button class="btn btn-sm btn-outline-success me-1" onclick="resolveAll()">{% trans "Resolve All" %}</button><button class="btn btn-sm btn-outline-secondary" onclick="clearHistory()">{% trans "Clear All" %}</button></div></div>
+            <div class="table-responsive"><table class="table table-hover table-sm align-middle"><thead><tr><th>{% trans "Rule" %}</th><th>{% trans "Triggered Host" %}</th><th>{% trans "Value" %}</th><th>{% trans "Time" %}</th><th class="text-end">{% trans "Action" %}</th></tr></thead><tbody id="alert-history-list"></tbody></table></div>
+        </div>
+    </div>
+    <div id="tab-archive" class="tab-pane fade">
+        <div class="alert-card"><h5 class="mb-4">{% trans "Resolved Alert Archive (Last 50)" %}</h5><div class="table-responsive"><table class="table table-hover table-sm align-middle"><thead><tr><th>{% trans "Rule" %}</th><th>{% trans "Triggered Host" %}</th><th>{% trans "Value" %}</th><th>{% trans "Occurred" %}</th><th>{% trans "Resolved" %}</th></tr></thead><tbody id="alert-archive-list"></tbody></table></div></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (typeof socket === 'undefined') {
+        var socket = initMonitoringSocket();
+        var editingRuleId = null;
+        var editingGroupId = null;
+        var allRules = [];
+        var allGroups = [];
+        var allAvailableHosts = [];
+    }
+
+
+    function requestInitialData() { socket.send(JSON.stringify({'action': 'get_initial_data'})); }
+    if (socket.readyState === WebSocket.OPEN) { requestInitialData(); }
+    socket.onopen = () => { requestInitialData(); };
+
+    socket.onmessage = (e) => {
+        var data = JSON.parse(e.data);
+        if (data.type === 'setup') {
+            allRules = data.alert_rules; 
+            allGroups = data.host_groups || [];
+            allAvailableHosts = data.hosts;
+            nicknameMap = data.nickname_map || {};
+            populateHostList(data.hosts); 
+            populateGroupList(data.host_groups);
+            populateHostCheckboxes(data.hosts);
+            renderAlertRules(data.alert_rules);
+            renderHostGroups(data.host_groups);
+            loadAlertHistory();
+            // Initial filter refresh after setup
+            setTimeout(refreshAlertFilters, 100);
+        } else if (data.type === 'alert') { showRealTimeAlert(data.alert); loadAlertHistory(); }
+        else if (['alert_rule_added', 'alert_rule_deleted', 'alert_rule_updated'].includes(data.type)) { cancelEdit(); socket.send(JSON.stringify({'action': 'get_initial_data'})); }
+        else if (['host_group_added', 'host_group_deleted', 'host_group_updated'].includes(data.type)) { cancelGroupEdit(); socket.send(JSON.stringify({'action': 'get_initial_data'})); }
+        else if (['alert_history_cleared', 'alert_resolved', 'all_alerts_resolved'].includes(data.type)) { loadAlertHistory(); loadResolvedHistory(); }
+        else if (data.type === 'alert_history') { renderAlertHistory(data.history); }
+        else if (data.type === 'resolved_history') { renderAlertArchive(data.history); }
+        else if (data.type === 'available_filters') { 
+            currentAvailableData = data.filters; 
+            updateFilterDropdowns(data.filters); 
+        }
+    };
+
+    function populateHostList(hosts) {
+        var hS = document.getElementById('a-host'), sS = document.getElementById('a-source');
+        const prevHost = hS.value;
+        hS.innerHTML = ''; 
+        hosts.forEach(h => { 
+            var opt = document.createElement('option'); 
+            opt.value = h.hostname; opt.innerText = h.nickname || h.hostname; 
+            if (h.hostname === prevHost) opt.selected = true;
+            hS.appendChild(opt); 
+        });
+        
+        if (sS.innerHTML === '') { 
+            var sources = [
+                {v: 'cpu', l: 'CPU'}, {v: 'mem', l: 'Memory'}, {v: 'disk', l: 'Disk'}, 
+                {v: 'net', l: 'Network'}, {v: 'diskio', l: 'Disk I/O'}, 
+                {v: 'win_cpu', l: 'Windows CPU'}, 
+                {v: 'custom_logs', l: '{% trans "Custom Log (Tail)" %}'},
+                {v: 'STATUS_API', l: '{% trans "Server Status Check (API)" %}'},
+                {v: 'STATUS_PING', l: '{% trans "Server Status Check (Ping)" %}'}
+            ]; 
+            sources.forEach(s => { 
+                var opt = document.createElement('option'); 
+                opt.value = s.v; opt.innerText = s.l; 
+                sS.appendChild(opt); 
+            }); 
+        }
+        hS.onchange = refreshAlertFilters;
+        sS.onchange = () => { 
+            var val = sS.value;
+            var isL = val === 'custom_logs'; 
+            var isS = val === 'STATUS_API' || val === 'STATUS_PING';
+            
+            document.getElementById('threshold-container').style.display = (isL) ? 'none' : 'block'; 
+            document.getElementById('keyword-container').style.display = isL ? 'block' : 'none'; 
+            document.getElementById('a-cond').parentElement.style.display = (isL || isS) ? 'none' : 'block'; 
+            refreshAlertFilters(); 
+        };
+    }
+
+    function populateGroupList(groups) {
+        var gS = document.getElementById('a-group');
+        if (!gS) return;
+        gS.innerHTML = '';
+        groups.forEach(g => {
+            var opt = document.createElement('option');
+            opt.value = g.id;
+            opt.innerText = g.name;
+            gS.appendChild(opt);
+        });
+    }
+
+    function populateHostCheckboxes(hosts) {
+        var container = document.getElementById('g-host-selection');
+        if (!container) return;
+        container.innerHTML = '';
+        hosts.forEach(h => {
+            var div = document.createElement('div');
+            div.className = 'form-check';
+            div.innerHTML = `<input class="form-check-input g-host-cb" type="checkbox" value="${h.hostname}" id="cb-${h.hostname}"><label class="form-check-label small" for="cb-${h.hostname}">${h.nickname || h.hostname}</label>`;
+            container.appendChild(div);
+        });
+    }
+
+    function onTargetTypeChange() {
+        var type = document.getElementById('a-target-type').value;
+        document.getElementById('a-host-container').style.display = type === 'single' ? 'block' : 'none';
+        document.getElementById('a-group-container').style.display = type === 'group' ? 'block' : 'none';
+        refreshAlertFilters();
+    }
+
+    function refreshAlertFilters() { 
+        var type = document.getElementById('a-target-type').value;
+        var h = document.getElementById('a-host').value;
+        var s = document.getElementById('a-source').value; 
+        
+        if (type === 'all') {
+            if (allAvailableHosts.length > 0) h = allAvailableHosts[0].hostname;
+        } else if (type === 'group') {
+            var gId = document.getElementById('a-group').value;
+            var group = allGroups.find(g => g.id == gId);
+            if (group && group.hostnames.length > 0) h = group.hostnames[0];
+        }
+
+        if (h && s) socket.send(JSON.stringify({'action': 'get_available_filters', 'host': h, 'source': s})); 
+    }
+
+    function updateFilterDropdowns(filters) { 
+        var kS = document.getElementById('a-f-key'), vS = document.getElementById('a-f-val'), sS = document.getElementById('a-source'); 
+        var originalSource = sS.value;
+        var s = originalSource;
+        
+        // 1. Update Source Visibility based on host availability
+        if (filters && filters.host_sources) {
+            let currentSourceStillValid = false;
+            let availableSources = filters.host_sources;
+            const alwaysVisible = ['custom_logs', 'STATUS_API', 'STATUS_PING'];
+
+            Array.from(sS.options).forEach(opt => {
+                const isAvailable = availableSources.includes(opt.value) || alwaysVisible.includes(opt.value);
+                opt.style.display = isAvailable ? 'block' : 'none';
+                
+                // If current source is valid, keep it
+                if (opt.value === s && isAvailable) {
+                    currentSourceStillValid = true;
+                }
+            });
+
+            // Special handling for CPU transition (Linux 'cpu' <-> Windows 'win_cpu')
+            if (!currentSourceStillValid) {
+                if (s === 'cpu' && availableSources.includes('win_cpu')) {
+                    sS.value = 'win_cpu';
+                    s = 'win_cpu';
+                    // We don't set currentSourceStillValid to true here because we NEED a re-fetch
+                } else if (s === 'win_cpu' && availableSources.includes('cpu')) {
+                    sS.value = 'cpu';
+                    s = 'cpu';
+                }
+            }
+
+            // If the source was changed during transition or is still invalid, pick a fallback and RE-FETCH
+            if (s !== originalSource || !currentSourceStillValid) {
+                // If still not valid, pick the first available source, prioritizing 'cpu' or 'win_cpu'
+                if (s === originalSource && !currentSourceStillValid) {
+                    const cpuOpt = Array.from(sS.options).find(opt => (opt.value === 'cpu' || opt.value === 'win_cpu') && opt.style.display === 'block');
+                    const firstOpt = Array.from(sS.options).find(opt => opt.style.display === 'block');
+                    const bestOpt = cpuOpt || firstOpt;
+
+                    if (bestOpt) {
+                        sS.value = bestOpt.value;
+                        s = bestOpt.value;
+                    }
+                }
+                
+                // If we ended up with a different source than what this 'filters' response is for, fetch again
+                refreshAlertFilters();
+                return; 
+            }
+        }
+
+        // 2. Update Metric Fields
+        refreshAlertFields(filters.fields || []);
+
+        // 3. Update Filter Keys
+        kS.innerHTML = '<option value="">{% trans "None" %}</option>'; 
+        vS.innerHTML = '<option value="">{% trans "None" %}</option>'; 
+        for (var key in filters.tags) { 
+            var opt = document.createElement('option'); 
+            opt.value = key; opt.innerText = key; 
+            kS.appendChild(opt); 
+        } 
+        
+        // 4. Default filter suggestions
+        if (s === 'cpu' && filters.tags && filters.tags['cpu']) {
+            kS.value = 'cpu';
+            onAlertFilterKeyChange();
+            if (filters.tags['cpu'].includes('cpu-total')) {
+                vS.value = 'cpu-total';
+            }
+        } else if (s === 'win_cpu' && filters.tags && filters.tags['instance']) {
+            kS.value = 'instance';
+            onAlertFilterKeyChange();
+            if (filters.tags['instance'].includes('_Total')) {
+                vS.value = '_Total';
+            }
+        }
+    }
+
+    function onAlertFilterKeyChange() { 
+        var key = document.getElementById('a-f-key').value, vS = document.getElementById('a-f-val'); 
+        vS.innerHTML = '<option value="">{% trans "None" %}</option>'; 
+        if (key && currentAvailableData && currentAvailableData.tags && currentAvailableData.tags[key]) { 
+            currentAvailableData.tags[key].forEach(val => { 
+                var opt = document.createElement('option'); opt.value = val; opt.innerText = val; vS.appendChild(opt); 
+            }); 
+        } 
+    }
+
+    function refreshAlertFields(fields) {
+        var s = document.getElementById('a-source').value, fS = document.getElementById('a-field'); 
+        fS.innerHTML = '';
+        
+        if (!fields || fields.length === 0) { 
+            if (s === 'cpu') fields = ['usage_idle', 'usage_user', 'usage_system']; 
+            else if (s === 'mem') fields = ['used_percent', 'used', 'free', 'total']; 
+            else if (s === 'disk') fields = ['used_percent', 'used', 'free', 'total']; 
+            else if (s === 'net') fields = ['bytes_recv', 'bytes_sent']; 
+            else if (s === 'diskio') fields = ['read_bytes', 'write_bytes']; 
+            else if (s === 'win_cpu') fields = ['Percent_Processor_Time']; 
+            else if (s === 'custom_logs') fields = ['value']; 
+            else if (s === 'STATUS_API' || s === 'STATUS_PING') fields = ['status'];
+        }
+        
+        fields.forEach(f => { 
+            var opt = document.createElement('option'); 
+            opt.value = f; 
+            opt.innerText = (typeof fieldMap !== 'undefined' && fieldMap[f]) ? fieldMap[f] : f; 
+            fS.appendChild(opt); 
+        });
+    }
+
+    function renderAlertRules(rules) {
+        var tbody = document.getElementById('alert-rules-list'); tbody.innerHTML = '';
+        document.getElementById('select-all-rules').checked = false;
+        updateRuleBatchUI();
+        
+        rules.forEach(r => {
+            var fI = r.filter_key ? `<div class="small text-muted">${r.filter_key}=${r.filter_value}</div>` : '';
+            var isL = r.metric_source === 'custom_logs', isD = r.condition === 'host_down', isS = r.condition === 'status_check';
+            var cT = isL ? `{% trans "Keyword" %}: "${r.log_keyword}"` : (isD ? `{% trans "Host Down" %}` : (isS ? `{% trans "Status Abnormal" %}` : `${r.condition} ${r.threshold}`));
+            var sC = r.is_active ? 'checked' : '', sCl = r.severity === 'critical' ? 'bg-danger' : (r.severity === 'warning' ? 'bg-warning text-dark' : 'bg-info text-dark');
+            var wB = r.webhook_url ? '<span class="badge bg-primary me-1">W</span>' : '', eB = r.notification_email ? '<span class="badge bg-success">E</span>' : '';
+            
+            var targetLabel = nicknameMap[r.hostname] || r.hostname;
+            if (r.target_type === 'group') {
+                var g = allGroups.find(x => x.id == r.host_group_id);
+                targetLabel = g ? `Group: ${g.name}` : '{% trans "Unknown Group" %}';
+            } else if (r.target_type === 'all') {
+                targetLabel = '{% trans "ALL HOSTS" %}';
+            }
+
+            var tr = document.createElement('tr');
+            var opacityClass = r.is_active ? '' : 'opacity-50'; // td 대신 내용물에만 투명도 적용
+            
+            tr.innerHTML = `
+                <td><input type="checkbox" class="form-check-input rule-checkbox" value="${r.id}" onclick="updateRuleBatchUI()"></td>
+                <td><div class="form-check form-switch"><input class="form-check-input" type="checkbox" ${sC} onclick="toggleRule(${r.id})"></div></td>
+                <td><div class="fw-bold text-info ${r.is_active ? '' : 'text-opacity-25'}">${r.name}</div><span class="badge ${sCl} py-1" style="font-size: 0.6rem;">${r.severity.toUpperCase()}</span></td>
+                <td><div class="${opacityClass}"><span class="badge bg-secondary">${targetLabel}</span></div></td>
+                <td><div class="${opacityClass}"><div>${isD ? '{% trans "OFFLINE CHECK" %}' : (isS ? '{% trans "STATUS CHECK" %}' : r.metric_source + '.' + r.metric_field)}</div>${fI}</div></td>
+                <td><div class="${opacityClass}"><div>${cT}</div><div class="small text-muted">{% trans "Cooldown" %}: ${r.cooldown_minutes}m</div></div></td>
+                <td><div class="${opacityClass}">${wB}${eB}${(!wB && !eB) ? '<span class="text-muted small">{% trans "None" %}</span>' : ''}</div></td>
+                <td class="text-end"><button class="btn btn-sm btn-outline-info me-1" onclick="editAlertRule(${r.id})">{% trans "Edit" %}</button><button class="btn btn-sm btn-outline-danger" onclick="deleteAlertRule(${r.id})">{% trans "Delete" %}</button></td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function toggleSelectAllRules(master) {
+        document.querySelectorAll('.rule-checkbox').forEach(cb => cb.checked = master.checked);
+        updateRuleBatchUI();
+    }
+
+    function updateRuleBatchUI() {
+        const selected = document.querySelectorAll('.rule-checkbox:checked').length;
+        document.getElementById('rule-batch-actions').style.display = selected > 0 ? 'block' : 'none';
+    }
+
+    function deleteSelectedRules() {
+        const selectedIds = Array.from(document.querySelectorAll('.rule-checkbox:checked')).map(cb => cb.value);
+        if (selectedIds.length === 0) return;
+        
+        showConfirm('{% trans "Delete Rules" %}', `{% trans "Delete" %} ${selectedIds.length} {% trans "selected rules?" %}`, () => {
+            socket.send(JSON.stringify({'action': 'batch_delete_alert_rules', 'ids': selectedIds}));
+        });
+    }
+
+    function editAlertRule(id) {
+        var rule = allRules.find(r => r.id === id); if (!rule) return;
+        editingRuleId = id; 
+        document.getElementById('a-name').value = rule.name; 
+        document.getElementById('a-target-type').value = rule.target_type;
+        onTargetTypeChange();
+        
+        if (rule.target_type === 'single') document.getElementById('a-host').value = rule.hostname;
+        else if (rule.target_type === 'group') document.getElementById('a-group').value = rule.host_group_id;
+
+        document.getElementById('a-source').value = rule.metric_source;
+        document.getElementById('a-source').dispatchEvent(new Event('change'));
+        setTimeout(() => { 
+            document.getElementById('a-field').value = rule.metric_field; 
+            document.getElementById('a-f-key').value = rule.filter_key || ''; 
+            onAlertFilterKeyChange(); 
+            setTimeout(() => { document.getElementById('a-f-val').value = rule.filter_value || ''; }, 50); 
+            document.getElementById('a-cond').value = rule.condition; 
+            document.getElementById('a-threshold').value = rule.threshold || ''; 
+            document.getElementById('a-keyword').value = rule.log_keyword || ''; 
+            document.getElementById('a-severity').value = rule.severity; 
+            document.getElementById('a-cooldown').value = rule.cooldown_minutes; 
+            
+            const webhookEl = document.getElementById('a-webhook');
+            if (webhookEl) webhookEl.value = rule.webhook_url || '';
+            
+            document.getElementById('a-email').value = rule.notification_email || ''; 
+            document.getElementById('btn-add-update').innerText = 'Update'; 
+            document.getElementById('btn-cancel-edit').style.display = 'block'; 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }, 200);
+    }
+
+    function cancelEdit() { 
+        editingRuleId = null; 
+        document.getElementById('a-name').value = ''; 
+        document.getElementById('a-threshold').value = ''; 
+        document.getElementById('a-keyword').value = ''; 
+        const webhookEl = document.getElementById('a-webhook');
+        if (webhookEl) webhookEl.value = '';
+        document.getElementById('a-email').value = ''; 
+        document.getElementById('btn-add-update').innerText = '{% trans "Add" %}'; 
+        document.getElementById('btn-cancel-edit').style.display = 'none'; 
+    }
+    function saveAlertRule() { if (editingRuleId) updateAlertRule(); else addAlertRule(); }
+    function toggleRule(id) { socket.send(JSON.stringify({'action': 'toggle_alert_rule', 'id': id})); }
+    function clearHistory() { 
+        showConfirm('{% trans "Clear History" %}', '{% trans "Clear all alert history?" %}', () => {
+            socket.send(JSON.stringify({'action': 'clear_alert_history'})); 
+        });
+    }
+    function addAlertRule() {
+        var s = document.getElementById('a-source').value;
+        var isL = s === 'custom_logs';
+        var isS = s === 'STATUS_API' || s === 'STATUS_PING';
+        var isD = document.getElementById('a-cond').value === 'host_down';
+        
+        const webhookEl = document.getElementById('a-webhook');
+        const webhookUrl = webhookEl ? webhookEl.value : '';
+
+        var r = { 
+            name: document.getElementById('a-name').value, 
+            target_type: document.getElementById('a-target-type').value,
+            host: document.getElementById('a-host').value, 
+            host_group_id: document.getElementById('a-group').value,
+            source: s, 
+            field: document.getElementById('a-field').value, 
+            f_key: document.getElementById('a-f-key').value, 
+            f_val: document.getElementById('a-f-val').value, 
+            condition: isS ? 'status_check' : document.getElementById('a-cond').value, 
+            threshold: document.getElementById('a-threshold').value, 
+            log_keyword: document.getElementById('a-keyword').value, 
+            severity: document.getElementById('a-severity').value, 
+            cooldown: document.getElementById('a-cooldown').value, 
+            webhook_url: webhookUrl, 
+            notification_email: document.getElementById('a-email').value 
+        };
+        if (!r.name) return showAlert('{% trans "Required" %}', '{% trans "Name is required" %}');
+        if (!isL && !isD && !isS && !r.threshold) return showAlert('{% trans "Required" %}', '{% trans "Threshold is required" %}');
+        socket.send(JSON.stringify({'action': 'add_alert_rule', 'rule': r}));
+        document.getElementById('a-name').value = ''; 
+        document.getElementById('a-threshold').value = ''; 
+        document.getElementById('a-keyword').value = ''; 
+        if (webhookEl) webhookEl.value = '';
+        document.getElementById('a-email').value = '';
+    }
+
+    function updateAlertRule() {
+        var s = document.getElementById('a-source').value;
+        var isL = s === 'custom_logs';
+        var isS = s === 'STATUS_API' || s === 'STATUS_PING';
+        var isD = document.getElementById('a-cond').value === 'host_down';
+        
+        const webhookEl = document.getElementById('a-webhook');
+        const webhookUrl = webhookEl ? webhookEl.value : '';
+
+        var r = { 
+            name: document.getElementById('a-name').value, 
+            target_type: document.getElementById('a-target-type').value,
+            host: document.getElementById('a-host').value, 
+            host_group_id: document.getElementById('a-group').value,
+            source: s, 
+            field: document.getElementById('a-field').value, 
+            f_key: document.getElementById('a-f-key').value, 
+            f_val: document.getElementById('a-f-val').value, 
+            condition: isS ? 'status_check' : document.getElementById('a-cond').value, 
+            threshold: document.getElementById('a-threshold').value, 
+            log_keyword: document.getElementById('a-keyword').value, 
+            severity: document.getElementById('a-severity').value, 
+            cooldown: document.getElementById('a-cooldown').value, 
+            webhook_url: webhookUrl, 
+            notification_email: document.getElementById('a-email').value 
+        };
+        if (!r.name) return showAlert('{% trans "Required" %}', '{% trans "Name is required" %}'); 
+        if (!isL && !isD && !isS && !r.threshold) return showAlert('{% trans "Required" %}', '{% trans "Threshold is required" %}');
+        socket.send(JSON.stringify({'action': 'edit_alert_rule', 'id': editingRuleId, 'rule': r}));
+    }
+
+    function deleteAlertRule(id) { 
+        showConfirm('{% trans "Delete Rule" %}', '{% trans "Delete this rule?" %}', () => {
+            socket.send(JSON.stringify({'action': 'delete_alert_rule', 'id': id})); 
+        });
+    }
+
+    function refreshGroups() { socket.send(JSON.stringify({'action': 'get_initial_data'})); }
+    
+    function renderHostGroups(groups) {
+        var tbody = document.getElementById('host-groups-list');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        groups.forEach(g => {
+            var tr = document.createElement('tr');
+            var hostBadges = g.hostnames.map(h => `<span class="badge bg-dark me-1 border border-secondary">${nicknameMap[h] || h}</span>`).join('');
+            tr.innerHTML = `
+                <td><div class="fw-bold text-warning">${g.name}</div></td>
+                <td>${hostBadges || '<span class="text-muted small">{% trans "No hosts" %}</span>'}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="editHostGroup(${g.id})">{% trans "Edit" %}</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteHostGroup(${g.id})">{% trans "Delete" %}</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function saveHostGroup() {
+        var name = document.getElementById('g-name').value;
+        var selectedHosts = Array.from(document.querySelectorAll('.g-host-cb:checked')).map(cb => cb.value);
+        if (!name) return showAlert('{% trans "Required" %}', '{% trans "Group Name is required" %}');
+        
+        if (editingGroupId) {
+            socket.send(JSON.stringify({'action': 'edit_host_group', 'id': editingGroupId, 'name': name, 'hostnames': selectedHosts}));
+        } else {
+            socket.send(JSON.stringify({'action': 'add_host_group', 'name': name, 'hostnames': selectedHosts}));
+        }
+    }
+
+    function editHostGroup(id) {
+        var group = allGroups.find(g => g.id === id);
+        if (!group) return;
+        editingGroupId = id;
+        document.getElementById('g-name').value = group.name;
+        document.querySelectorAll('.g-host-cb').forEach(cb => {
+            cb.checked = group.hostnames.includes(cb.value);
+        });
+        document.getElementById('btn-save-group').innerText = '{% trans "Update Group" %}';
+        document.getElementById('btn-cancel-g-edit').style.display = 'block';
+    }
+
+    function cancelGroupEdit() {
+        editingGroupId = null;
+        document.getElementById('g-name').value = '';
+        document.querySelectorAll('.g-host-cb').forEach(cb => cb.checked = false);
+        document.getElementById('btn-save-group').innerText = '{% trans "Save Group" %}';
+        document.getElementById('btn-cancel-g-edit').style.display = 'none';
+    }
+
+    function deleteHostGroup(id) {
+        showConfirm('{% trans "Delete Group" %}', '{% trans "Delete this host group?" %}', () => {
+            socket.send(JSON.stringify({'action': 'delete_host_group', 'id': id}));
+        });
+    }
+    function testNotification(type) { 
+        var el = type === 'webhook' ? document.getElementById('a-webhook') : document.getElementById('a-email'); 
+        var v = el ? el.value : '';
+        if (!v) return showAlert('{% trans "Required" %}', '{% trans "Please enter an address first" %}'); 
+        socket.send(JSON.stringify({ 'action': 'test_notification', 'type': type, 'target': v })); 
+        showAlert('{% trans "Success" %}', '{% trans "Test notification request sent!" %}'); 
+    }
+    function refreshRules() { socket.send(JSON.stringify({'action': 'get_initial_data'})); }
+    function refreshAll() { var aT = document.querySelector('#pills-tab .nav-link.active').getAttribute('data-bs-target'); if (aT === '#tab-rules') refreshRules(); else if (aT === '#tab-history') loadAlertHistory(); else if (aT === '#tab-archive') loadResolvedHistory(); var btn = document.querySelector('button[onclick="refreshAll()"]'); btn.classList.add('disabled'); setTimeout(() => btn.classList.remove('disabled'), 500); }
+    function loadAlertHistory() { socket.send(JSON.stringify({'action': 'get_alert_history'})); }
+    function loadResolvedHistory() { socket.send(JSON.stringify({'action': 'get_resolved_history'})); }
+    function resolveAll() { 
+        showConfirm('{% trans "Resolve All" %}', '{% trans "Resolve all active alerts?" %}', () => {
+            socket.send(JSON.stringify({'action': 'resolve_all_alerts'})); 
+        });
+    }
+</script>
+{% endblock %}
