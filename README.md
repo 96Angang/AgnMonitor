@@ -1,3 +1,5 @@
+<img width="800" height="510" alt="image" src="https://github.com/user-attachments/assets/62376e6e-d9ad-4e39-bea4-7db4ab161749" />
+
 # AgnMonitor
 
 English | [Korean](README.ko.md)
